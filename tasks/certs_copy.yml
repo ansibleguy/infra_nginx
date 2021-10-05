@@ -1,0 +1,26 @@
+---
+
+- name: Nginx | Certs | Trying to copy cert pub
+  ansible.builtin.copy:
+    dest: "{{ NGINX_CERT_PUB_PATH }}/{{ NGINX_CERT_PUB_FILE }}"
+    src: "files/certs/{{ NGINX_CERT_PUB_FILE }}"
+    mode: 0444
+    owner: "{{ NGINX_USER }}"
+    group: "{{ NGINX_GROUP }}"
+  ignore_errors: true
+  register: copy_cert_pub
+  when: not exists_cert_pub.stat.exists
+
+- name: Nginx | Certs | Trying to copy cert pk
+  ansible.builtin.copy:
+    dest: "{{ NGINX_CERT_KEY_PATH }}/{{ NGINX_CERT_KEY_FILE }}"
+    src: "files/certs/{{ NGINX_CERT_KEY_FILE }}"
+    mode: 0440
+    owner: "{{ NGINX_USER }}"
+    group: "{{ NGINX_GROUP }}"
+  no_log: true
+  register: copy_cert_key
+  ignore_errors: true
+  when:
+    - copy_cert_pub.failed is undefined or not copy_cert_pub.failed
+    - not exists_cert_key.stat.exists

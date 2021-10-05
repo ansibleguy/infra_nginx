@@ -1,0 +1,97 @@
+# http server
+server {
+  listen {{ NGINX_DEFAULTS.PORT_PLAIN }};
+  server_name {{ NGINX_DOMAIN }}{% for alias in NGINX_ALIASES %} {{ alias }}{% endfor %}{% if NGINX_IP != '' %} {{ NGINX_IP }}{% endif %};
+{% if NGINX_LOG_PER_SITE %}
+  error_log {{ NGINX_LOG_DIR }}/{{ site_domain }}_error.log;
+  access_log {{ NGINX_LOG_DIR }}/{{ site_domain }}_access.log  main;
+{% else %}
+  error_log {{ NGINX_LOG_DIR }}/error.log;
+  access_log {{ NGINX_LOG_DIR }}/access.log  main;
+{% endif %}
+
+  return 301 https://{{ NGINX_DOMAIN }}$request_uri;
+
+}
+
+# https server
+server {
+  listen {{ NGINX_DEFAULTS.PORT_SSL }} ssl;
+  server_name {{ NGINX_DOMAIN }}{% for alias in NGINX_ALIASES %} {{ alias }}{% endfor %}{% if NGINX_IP != '' %} {{ NGINX_IP }}{% endif %};
+{% if NGINX_LOG_PER_SITE %}
+  error_log {{ NGINX_LOG_DIR }}/{{ site_domain }}_error.log;
+  access_log {{ NGINX_LOG_DIR }}/{{ site_domain }}_access.log  main;;
+{% else %}
+  error_log {{ NGINX_LOG_DIR }}/error.log;
+  access_log {{ NGINX_LOG_DIR }}/access.log  main;
+{% endif %}
+
+  # ssl config
+  ssl_certificate_key '{{ NGINX_CERT_KEY_PATH }}/{{ NGINX_CERT_KEY_FILE }}';
+  ssl_certificate     '{{ NGINX_CERT_PUB_PATH }}/{{ NGINX_CERT_PUB_FILE }}';  # should use the certificate chain => top is server cert; bottom root cert
+{% if NGINX_CERT_CA_FILE == '' %}
+  ssl_stapling on;
+  ssl_stapling_verify on;
+{% else %}
+  ssl_trusted_certificate {{ NGINX_CERT_PUB_PATH }}{{ NGINX_CERT_CA_FILE }};
+  ssl_stapling off;
+  ssl_stapling_verify off;
+{% endif %}
+
+  location / {
+{% if NGINX_CONFIG == 'proxy' %}
+
+    proxy_pass {{ NGINX_PROXY_PROTO }}://{{ NGINX_PROXY_IP }}:{{ NGINX_PROXY_PORT }};
+
+{%   for option, value in NGINX_PROXY_HEADERS.items() %}
+    {{ option }} {{ value }};
+{%   endfor %}
+
+{% elif NGINX_CONFIG == 'redirect' %}
+{%   if NGINX_REDIRECT_REQUEST %}
+    return 302 https://{{ NGINX_REDIRECT }}$request_uri;
+{%   else %}
+    return 302 https://{{ NGINX_REDIRECT }};
+{%   endif %}
+
+{% elif NGINX_CONFIG == 'serve' %}
+    root {{ NGINX_SERVE_PATH }};
+    index {% for ind in NGINX_SERVE_INDEX %}{{ ind }} {% endfor %};
+
+    location / {
+        try_files $uri $uri/ /{{ NGINX_SERVE_INDEX[0] }};
+    }
+
+{%   if NGINX_SERVE_403 != '' %}
+    error_page 403 /{{ NGINX_SERVE_403 }};
+    location = /{{ NGINX_SERVE_403 }} {
+    }
+{%   endif %}
+{%   if NGINX_SERVE_404 != '' %}
+    error_page 404 /{{ NGINX_SERVE_404 }};
+    location = /{{ NGINX_SERVE_404 }} {
+    }
+{%   endif %}
+{%   if NGINX_SERVE_500 != '' %}
+    error_page 500 502 503 504 /{{ NGINX_SERVE_500 }};
+    location = /{{ NGINX_SERVE_500 }} {
+    }
+{%   endif %}
+
+{% endif %}
+
+    # other options
+{% for option, value in NGINX_OPTIONS.items() %}
+    {{ option }} {{ value }};
+{% endfor %}
+
+{% if NGINX_ADDITIONS|length > 0 %}
+    # additional nginx config
+{% endif %}
+{% for option, value in NGINX_ADDITIONS.items() %}
+    {{ option }} {{ value }};
+{% endfor %}
+
+  }
+
+}

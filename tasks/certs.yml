@@ -1,0 +1,51 @@
+---
+
+- name: Nginx | Certs | Allowing service-user to read certificate (if needed)
+  ansible.builtin.user:
+    name: "{{ NGINX_USER }}"
+    groups: 'ssl-cert'
+    append: yes
+  when:
+    - NGINX_CERT_PATH == '/etc/ssl'
+    - "'ssl-cert' in groups"
+
+- name: Nginx | Certs | Creating certificate directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: 0755
+  with_items:
+    - "{{ NGINX_CERT_PUB_PATH }}"
+    - "{{ NGINX_CERT_KEY_PATH }}"
+
+- name: Nginx | Certs | Checking if cert pub exists
+  ansible.builtin.stat:
+    path: "{{ NGINX_CERT_PUB_PATH }}/{{ NGINX_CERT_PUB_FILE }}"
+  register: exists_cert_pub
+
+- name: Nginx | Certs | Checking if cert pk exists
+  ansible.builtin.stat:
+    path: "{{ NGINX_CERT_KEY_PATH }}/{{ NGINX_CERT_KEY_FILE }}"
+  register: exists_cert_key
+
+- name: Nginx | Certs | Copying certificate files
+  ansible.builtin.import_tasks: certs_copy.yml
+  when: >
+    NGINX_CERT == 'local' and
+    (not exists_cert_key.stat.exists or
+    not exists_cert_pub.stat.exists)
+
+- name: Nginx | Certs | Creating selfsigned certificates
+  ansible.builtin.import_tasks: certs_selfsigned.yml
+  when: >
+    NGINX_CERT == 'local' and
+    (not exists_cert_key.stat.exists or
+    not exists_cert_pub.stat.exists) and
+    ((copy_cert_pub.failed is defined and copy_cert_pub.failed) or
+    (copy_cert_key.failed is defined and copy_cert_key.failed))
+
+
+
+
+
+
