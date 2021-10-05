@@ -1,13 +1,13 @@
 # http server
 server {
-  listen {{ NGINX_DEFAULTS.PORT_PLAIN }};
+  listen {{ NGINX_PORT_PLAIN }};
   server_name {{ NGINX_DOMAIN }}{% for alias in NGINX_ALIASES %} {{ alias }}{% endfor %}{% if NGINX_IP != '' %} {{ NGINX_IP }}{% endif %};
 {% if NGINX_LOG_PER_SITE %}
-  error_log {{ NGINX_LOG_DIR }}/{{ site_domain }}_error.log;
-  access_log {{ NGINX_LOG_DIR }}/{{ site_domain }}_access.log  main;
+#  error_log {{ NGINX_LOG_DIR }}/{{ NGINX_DOMAIN }}_error.log;
+#  access_log {{ NGINX_LOG_DIR }}/{{ NGINX_DOMAIN }}_access.log  main;
 {% else %}
-  error_log {{ NGINX_LOG_DIR }}/error.log;
-  access_log {{ NGINX_LOG_DIR }}/access.log  main;
+#  error_log {{ NGINX_LOG_DIR }}/error.log;
+#  access_log {{ NGINX_LOG_DIR }}/access.log  main;
 {% endif %}
 
   return 301 https://{{ NGINX_DOMAIN }}$request_uri;
@@ -16,11 +16,11 @@ server {
 
 # https server
 server {
-  listen {{ NGINX_DEFAULTS.PORT_SSL }} ssl;
+  listen {{ NGINX_PORT_SSL }} ssl;
   server_name {{ NGINX_DOMAIN }}{% for alias in NGINX_ALIASES %} {{ alias }}{% endfor %}{% if NGINX_IP != '' %} {{ NGINX_IP }}{% endif %};
 {% if NGINX_LOG_PER_SITE %}
-  error_log {{ NGINX_LOG_DIR }}/{{ site_domain }}_error.log;
-  access_log {{ NGINX_LOG_DIR }}/{{ site_domain }}_access.log  main;;
+#  error_log {{ NGINX_LOG_DIR }}/{{ NGINX_DOMAIN }}_error.log;
+#  access_log {{ NGINX_LOG_DIR }}/{{ NGINX_DOMAIN }}_access.log  main;;
 {% else %}
   error_log {{ NGINX_LOG_DIR }}/error.log;
   access_log {{ NGINX_LOG_DIR }}/access.log  main;
@@ -39,22 +39,22 @@ server {
 {% endif %}
 
   location / {
-{% if NGINX_CONFIG == 'proxy' %}
+{% if NGINX_MODE == 'proxy' %}
 
     proxy_pass {{ NGINX_PROXY_PROTO }}://{{ NGINX_PROXY_IP }}:{{ NGINX_PROXY_PORT }};
 
 {%   for option, value in NGINX_PROXY_HEADERS.items() %}
-    {{ option }} {{ value }};
+    proxy_set_header {{ option }} {{ value }};
 {%   endfor %}
 
-{% elif NGINX_CONFIG == 'redirect' %}
+{% elif NGINX_MODE == 'redirect' %}
 {%   if NGINX_REDIRECT_REQUEST %}
     return 302 https://{{ NGINX_REDIRECT }}$request_uri;
 {%   else %}
     return 302 https://{{ NGINX_REDIRECT }};
 {%   endif %}
 
-{% elif NGINX_CONFIG == 'serve' %}
+{% elif NGINX_MODE == 'serve' %}
     root {{ NGINX_SERVE_PATH }};
     index {% for ind in NGINX_SERVE_INDEX %}{{ ind }} {% endfor %};
 

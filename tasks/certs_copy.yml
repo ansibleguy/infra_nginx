@@ -5,8 +5,6 @@
     dest: "{{ NGINX_CERT_PUB_PATH }}/{{ NGINX_CERT_PUB_FILE }}"
     src: "files/certs/{{ NGINX_CERT_PUB_FILE }}"
     mode: 0444
-    owner: "{{ NGINX_USER }}"
-    group: "{{ NGINX_GROUP }}"
   ignore_errors: true
   register: copy_cert_pub
   when: not exists_cert_pub.stat.exists
@@ -15,9 +13,7 @@
   ansible.builtin.copy:
     dest: "{{ NGINX_CERT_KEY_PATH }}/{{ NGINX_CERT_KEY_FILE }}"
     src: "files/certs/{{ NGINX_CERT_KEY_FILE }}"
-    mode: 0440
-    owner: "{{ NGINX_USER }}"
-    group: "{{ NGINX_GROUP }}"
+    mode: 0444  # since owner is not possible on 'nobody'
   no_log: true
   register: copy_cert_key
   ignore_errors: true

@@ -1,6 +1,6 @@
 ---
 
-NGINX_CONFIG: 'proxy'  # proxy/redirect/serve
+NGINX_MODE: "{{ nginx.mode | default('proxy') }}"  # proxy/redirect/serve
 NGINX_PORT_PLAIN: "{{ nginx.port_plain | default(80) }}"
 NGINX_PORT_SSL: "{{ nginx.port_ssl | default(443) }}"
 NGINX_DOMAIN: "{{ nginx.domain | default('_') }}"
@@ -15,7 +15,7 @@ NGINX_REDIRECT_REQUEST: "{{ nginx.redirect_request | default(true) }}"
 
 # mode proxy
 NGINX_PROXY_IP: "{{ nginx.proxy_ip | default('127.0.0.1') }}"
-NGINX_PROXY_PORT: "{{ nginx.proxy_ip | default('127.0.0.1') }}"
+NGINX_PROXY_PORT: "{{ nginx.proxy_port | default(8080) }}"
 NGINX_PROXY_PROTO: 'http'
 NGINX_PROXY_HEADERS:
   Host: '$http_host'
@@ -35,13 +35,13 @@ NGINX_SERVE_500: "{{ nginx.serve_500 | default('') }}"
 # ssl config
 NGINX_CERT: 'local'  # local/letsencrypt
 NGINX_CERT_PATH: "{{ nginx.cert_path | default('/etc/ssl') }}"
-NGINX_CERT_PUB_PATH: "{{ nginx.cert_pub_path | default(NGINX_CERT_PATH + 'certs') }}"
-NGINX_CERT_KEY_PATH: "{{ nginx.cert_key_path | default(NGINX_CERT_PATH + 'private') }}"
+NGINX_CERT_PUB_PATH: "{{ nginx.cert_pub_path | default(NGINX_CERT_PATH + '/certs') }}"
+NGINX_CERT_KEY_PATH: "{{ nginx.cert_key_path | default(NGINX_CERT_PATH + '/private') }}"
 NGINX_CERT_PUB_FILE: "{{ nginx.cert_pub | default(NGINX_DOMAIN) }}.crt"  # should use the certificate chain => top is server cert; bottom root cert
 NGINX_CERT_KEY_FILE: "{{ nginx.cert_key | default(NGINX_DOMAIN) }}.key"
 NGINX_CERT_CSR_FILE: "{{ nginx.cert_csr | default(NGINX_DOMAIN) }}.csr"
 NGINX_CERT_CA_FILE: "{{ nginx.cert_ca | default('') }}"
-NGINX_CERT_CSR_OPTIONS:
+NGINX_CERT_CSR_DATA:
   country: 'AT'
   org: 'AnsibleGuy'
   email: 'guy@ansibleguy.net'
@@ -50,12 +50,13 @@ NGINX_CERT_CSR_OPTIONS:
 # other config
 NGINX_LOG_DIR: "{{ nginx.log_dir | default('/var/log/nginx') }}"
 NGINX_LOG_PER_SITE: "{{ nginx.log_per_site | default(true) }}"
+NGINX_LOG_FORMAT: "main '$remote_addr - $remote_user [$time_local]  $status \"$request\" $body_bytes_sent \"$http_referer\" \"$http_user_agent\" \"$http_x_forwarded_for\"'"
 
 NGINX_OPTIONS:
   autoindex: "{{ nginx.autoindex | default('off') }}"
   server_tokens: "{{ nginx.server_tokens | default('off') }}"
-  server_names_hash_bucket_size: "{{ nginx.server_names_hash_bucket_size | default(64) }}"
-  log_format: "{{ nginx.log_format | default('main \'$remote_addr - $remote_user [$time_local]  $status \"$request\" $body_bytes_sent \"$http_referer\" \"$http_user_agent\" \"$http_x_forwarded_for\"\'') }}"
+#  server_names_hash_bucket_size: "{{ nginx.server_names_hash_bucket_size | default(64) }}"
+#  log_format: "{{ nginx.log_format | default(NGINX_LOG_FORMAT) }}"
   proxy_pass_request_headers: "{{ nginx.proxy_pass_request_headers | default('on') }}"
   proxy_connect_timeout: "{{ nginx.proxy_connect_timeout | default(150) }}"
   proxy_send_timeout: "{{ nginx.proxy_send_timeout | default(100) }}"
