@@ -7,7 +7,7 @@ NGINX_DOMAIN: "{{ nginx.domain | default('_') }}"
 NGINX_ALIASES: "{{ nginx.aliases | default([]) }}"
 NGINX_IP: "{{ nginx.ip | default('') }}"
 NGINX_USER: "{{ nginx.user | default('nobody') }}"
-NGINX_GROUP: "{{ nginx.group | default('nobody') }}"
+NGINX_GROUP: "{{ nginx.group | default('nogroup') }}"
 
 # mode redirect
 NGINX_REDIRECT: "{{ nginx_redirect | default('https://ansibleguy.net') }}"
