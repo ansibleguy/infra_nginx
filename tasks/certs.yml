@@ -1,22 +1,24 @@
 ---
 
+- name: Nginx | Certs | Creating public directory
+  ansible.builtin.file:
+    path: "{{ NGINX_CERT_PUB_PATH }}"
+    state: directory
+    mode: 0755
+
+- name: Nginx | Certs | Creating private directory
+  ansible.builtin.file:
+    path: "{{ NGINX_CERT_KEY_PATH }}"
+    state: directory
+    mode: 0750
+    group: "{% if 'ssl-cert' in groups %}ssl-cert{% else %}{{ NGINX_GROUP }}{% endif %}"
+
 - name: Nginx | Certs | Allowing service-user to read certificate (if needed)
   ansible.builtin.user:
     name: "{{ NGINX_USER }}"
     groups: 'ssl-cert'
     append: yes
-  when:
-    - NGINX_CERT_PATH == '/etc/ssl'
-    - "'ssl-cert' in groups"
-
-- name: Nginx | Certs | Creating certificate directories
-  ansible.builtin.file:
-    path: "{{ item }}"
-    state: directory
-    mode: 0755
-  with_items:
-    - "{{ NGINX_CERT_PUB_PATH }}"
-    - "{{ NGINX_CERT_KEY_PATH }}"
+  when: "'ssl-cert' in groups"
 
 - name: Nginx | Certs | Checking if cert pub exists
   ansible.builtin.stat:
