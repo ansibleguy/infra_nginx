@@ -1,33 +1,5 @@
 ---
 
-- name: Nginx | Installing nginx
-  ansible.builtin.apt:
-    pkg: ['nginx']
-
-- name: Nginx | Configuring certificates
-  ansible.builtin.import_tasks: certs.yml
-
-- name: Nginx | Adding site config
-  ansible.builtin.template:
-    src: 'templates/etc/nginx/sites-available/site.j2'
-    dest: "/etc/nginx/sites-available/site_{{ NGINX_DOMAIN }}"
-  register: site_config
-
-- name: Nginx | Enabling site config
-  ansible.builtin.file:
-    src: "/etc/nginx/sites-available/site_{{ NGINX_DOMAIN }}"
-    dest: "/etc/nginx/sites-enabled/site_{{ NGINX_DOMAIN }}"
-    state: link
-  register: site_state
-
-- name: Nginx | Enabling nginx service
-  ansible.builtin.systemd:
-    name: 'nginx.service'
-    enabled: yes
-    state: started
-
-- name: Nginx | Restarting nginx service
-  ansible.builtin.systemd:
-    name: 'nginx.service'
-    state: restarted
-  when: site_config.changed or site_state.changed
+- name: Nginx | Processing debian config
+  ansible.builtin.import_tasks: debian/main.yml
+  when: "ansible_distribution|lower in ['debian', 'ubuntu']"

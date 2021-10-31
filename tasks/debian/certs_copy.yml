@@ -1,6 +1,6 @@
 ---
 
-- name: Nginx | Certs | Trying to copy cert pub
+- name: Nginx | Debian | Certs | Trying to copy cert pub
   ansible.builtin.copy:
     dest: "{{ NGINX_CERT_PUB_PATH }}/{{ NGINX_CERT_PUB_FILE }}"
     src: "files/certs/{{ NGINX_CERT_PUB_FILE }}"
@@ -9,7 +9,7 @@
   register: copy_cert_pub
   when: not exists_cert_pub.stat.exists
 
-- name: Nginx | Certs | Trying to copy cert pk
+- name: Nginx | Debian | Certs | Trying to copy cert pk
   ansible.builtin.copy:
     dest: "{{ NGINX_CERT_KEY_PATH }}/{{ NGINX_CERT_KEY_FILE }}"
     src: "files/certs/{{ NGINX_CERT_KEY_FILE }}"
