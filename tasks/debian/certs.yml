@@ -45,9 +45,3 @@
     not exists_cert_pub.stat.exists) and
     ((copy_cert_pub.failed is defined and copy_cert_pub.failed) or
     (copy_cert_key.failed is defined and copy_cert_key.failed))
-
-
-
-
-
-

@@ -1,7 +1,11 @@
 ---
 
 galaxy_info:
-  author: 'AnsibleGuy'
+  authors: ['AnsibleGuy <guy@ansibleguy.net>']
+  readme: 'ReadMe.md'
+  license: ['MIT']
+  version: '1.0'
+  repository: 'https://github.com/ansibleguy/nginx'
   description: 'Role to configure a nginx webserver in one of three basic config modes: proxy, redirect, serve'
   platforms:
     - name: Debian
@@ -9,5 +13,5 @@ galaxy_info:
         - bullseye
   galaxy_tags:
     - 'nginx'
-    - 'reverse-proxy'
+    - 'reverseproxy'
     - 'webserver'
