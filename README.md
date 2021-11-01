@@ -28,7 +28,7 @@ Currently, this role does not support the configuration of multiple sites in one
 
 For this you might need to loop its call.
 
-All options can be found in the [main defaults file](https://github.com/ansibleguy/nginx/blob/stable/defaults/main.yml)!
+All options can be found in the [main defaults file](https://github.com/ansibleguy/infra_nginx/blob/stable/defaults/main.yml)!
 
 ```yaml
 nginx:
