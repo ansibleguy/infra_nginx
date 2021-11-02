@@ -6,11 +6,11 @@ server {
   # log config
 {% if NGINX_CONFIG.log.syslog %}
 {%   if NGINX_CONFIG.log.syslog_host is not none %}
-  access_log syslog:server={{ NGINX_CONFIG.log.syslog_host }},tag=nginx_{{ name }},nohostname,severity=info combined;
-  error_log  syslog:server={{ NGINX_CONFIG.log.syslog_host }},tag=nginx_{{ name }},nohostname,severity=error;
+  access_log syslog:server={{ NGINX_CONFIG.log.syslog_host }},tag=nginx_http_{{ name }},nohostname,severity=info combined;
+  error_log  syslog:server={{ NGINX_CONFIG.log.syslog_host }},tag=nginx_http_{{ name }},nohostname,severity=error;
 {%   else %}
-  access_log syslog:server=unix:/dev/log,tag=nginx_{{ name }},nohostname,severity=info combined;
-  error_log  syslog:server=unix:/dev/log,tag=nginx_{{ name }},nohostname,severity=error;
+  access_log syslog:server=unix:/dev/log,tag=nginx_http_{{ name }},nohostname,severity=info combined;
+  error_log  syslog:server=unix:/dev/log,tag=nginx_http_{{ name }},nohostname,severity=error;
 {%   endif %}
 {% elif NGINX_CONFIG.log.per_site %}
   error_log {{ NGINX_CONFIG.log.path }}/{{ name }}_error.log;
@@ -51,11 +51,11 @@ server {
 
   # log config
 {%   if NGINX_CONFIG.log.syslog_host is not none %}
-  access_log syslog:server={{ NGINX_CONFIG.log.syslog_host }},tag=nginx_{{ name }},nohostname,severity=info combined;
-  error_log  syslog:server={{ NGINX_CONFIG.log.syslog_host }},tag=nginx_{{ name }},nohostname,severity=error;
+  access_log syslog:server={{ NGINX_CONFIG.log.syslog_host }},tag=nginx_https_{{ name }},nohostname,severity=info combined;
+  error_log  syslog:server={{ NGINX_CONFIG.log.syslog_host }},tag=nginx_https_{{ name }},nohostname,severity=error;
 {%   else %}
-  access_log syslog:server=unix:/dev/log,tag=nginx_{{ name }},nohostname,severity=info combined;
-  error_log  syslog:server=unix:/dev/log,tag=nginx_{{ name }},nohostname,severity=error;
+  access_log syslog:server=unix:/dev/log,tag=nginx_https_{{ name }},nohostname,severity=info combined;
+  error_log  syslog:server=unix:/dev/log,tag=nginx_https_{{ name }},nohostname,severity=error;
 {%   endif %}
 {% elif NGINX_CONFIG.log.per_site %}
   error_log {{ NGINX_CONFIG.log.path }}/{{ name }}_error.log;
