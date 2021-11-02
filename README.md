@@ -40,6 +40,10 @@ Role to configure a nginx webserver.
 * **Note:** This role expects that the site's unencrypted 'server' will only redirect to its encrypted connection.
 
 
+* **Note:** If you want all domain-names to get 'catched' by a site/server you need to add an underline '_' as alias or domain!<br>
+This will also be done automatically if no domain is supplied.
+
+
 ## Usage
 
 Just define the 'nginx' dictionary the sites you want to configure!
