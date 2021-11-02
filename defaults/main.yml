@@ -15,21 +15,7 @@ default_nginx:
     syslog: true
     syslog_host:
 
-  config: {}
-
-NGINX_CONFIG: "{{ default_nginx | combine(nginx, recursive=true) }}"
-
-default_site_config:
-  mode: 'proxy'
-  port_plain: 80
-  port_ssl: 443
-  domain: '_'
-  aliases: []
-  ip:
-  user: 'nobody'
-  group: 'nobody'
-
-  config:  # site-specific setting-value pairs
+  config:
     autoindex: 'off'
     server_tokens: 'off'
     proxy_pass_request_headers: 'on'
@@ -50,7 +36,19 @@ default_site_config:
     ssl_ciphers: 'ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-SHA384:ECDHE-RSA-AES128-SHA256:ECDHE-RSA-AES256-SHA:ECDHE-RSA-AES128-SHA:DHE-RSA-AES256-SHA256:DHE-RSA-AES128-SHA256:DHE-RSA-AES256-SHA:DHE-RSA-AES128-SHA:ECDHE-RSA-DES-CBC3-SHA:EDH-RSA-DES-CBC3-SHA:AES256-GCM-SHA384:AES128-GCM-SHA256:AES256-SHA256:AES128-SHA256:AES256-SHA:AES128-SHA:DES-CBC3-SHA:HIGH:!aNULL:!eNULL:!EXPORT:!DES:!MD5:!PSK:!RC4'
     # limit_conn: 'conns 100'  # zero size shared memory zone
 
+NGINX_CONFIG: "{{ default_nginx | combine(nginx, recursive=true) }}"
 
+default_site_config:
+  mode: 'proxy'
+  port_plain: 80
+  port_ssl: 443
+  domain: '_'
+  aliases: []
+  ip:
+  user: 'nobody'
+  group: 'nobody'
+
+  config: {}  # site-specific setting-value pairs
   config_additions: []  # lines that will 1-to-1 be appended to the site-config (directory config etc.)
   # BE AWARE that you might break the config-syntax if you're not careful
 

@@ -84,6 +84,15 @@ server {
   }
 {% endif %}
 
+{% if NGINX_CONFIG.config|length > 0 %}
+  # global config
+{% endif %}
+{% for setting, value in NGINX_CONFIG.config.items() %}
+{%   if setting not in nginx_config_graylist %}
+  {{ setting }} {{ value }};
+{%   endif %}
+{% endfor %}
+
 {% if site.config|length > 0 %}
   # site-specific config
 {% endif %}
