@@ -4,14 +4,12 @@ server {
   server_name {{ site.domain }}{% for alias in site.aliases %} {{ alias }}{% endfor %}{% if site.ip is not none %} {{ site.ip }}{% endif %};
 
   # log config
-{% if NGINX_CONFIG.log.syslog %}
-{%   if NGINX_CONFIG.log.syslog_host is not none %}
-  access_log syslog:server={{ NGINX_CONFIG.log.syslog_host }},tag=nginx_http_{{ name }},nohostname,severity=info combined;
-  error_log  syslog:server={{ NGINX_CONFIG.log.syslog_host }},tag=nginx_http_{{ name }},nohostname,severity=error;
-{%   else %}
-  access_log syslog:server=unix:/dev/log,tag=nginx_http_{{ name }},nohostname,severity=info combined;
-  error_log  syslog:server=unix:/dev/log,tag=nginx_http_{{ name }},nohostname,severity=error;
-{%   endif %}
+{% if NGINX_CONFIG.log.syslog and NGINX_CONFIG.log.syslog_host is not none %}
+  access_log syslog:server={{ NGINX_CONFIG.log.syslog_host }},tag={{ NGINX_CONFIG.log.prefix_ue }}{{ name }},nohostname,severity=info combined;
+  error_log  syslog:server={{ NGINX_CONFIG.log.syslog_host }},tag={{ NGINX_CONFIG.log.prefix_ue }}{{ name }},nohostname,severity=error;
+{% elif NGINX_CONFIG.log.syslog %}
+  access_log syslog:server=unix:/dev/log,tag={{ NGINX_CONFIG.log.prefix_ue }}{{ name }},nohostname,severity=info combined;
+  error_log  syslog:server=unix:/dev/log,tag={{ NGINX_CONFIG.log.prefix_ue }}{{ name }},nohostname,severity=error;
 {% elif NGINX_CONFIG.log.per_site %}
   error_log {{ NGINX_CONFIG.log.path }}/{{ name }}_error.log;
   access_log {{ NGINX_CONFIG.log.path }}/{{ name }}_access.log;
@@ -20,9 +18,8 @@ server {
   access_log {{ NGINX_CONFIG.log.path }}/access.log;
 {% endif %}
 
-{% if site.headers|length > 0 %}
+{% if site.headers | length > 0 %}
   # site-specific headers
-{% endif %}
 {%   for header, value in site.headers.items() %}
 {%     if 'header' in header %}
   {{ header }} {{ value }};
@@ -30,10 +27,11 @@ server {
   add_header {{ header }} {{ value }};
 {%     endif %}
 {%   endfor %}
+{% endif %}
 
+{% if site.security.restrict_methods %}
   # security config
-{% if restrict_methods %}
-  if ($request_method !~ ^(GET|POST)$ ) {
+  if ($request_method !~ ^({{ nginx_restricted_methods | join('|') }})$ ) {
     return 405;
   }
 {% endif %}
@@ -47,16 +45,14 @@ server {
 server {
   listen {{ site.port_ssl }} ssl;
   server_name {{ site.domain }}{% for alias in site.aliases %} {{ alias }}{% endfor %}{% if site.ip is not none %} {{ site.ip }}{% endif %};
-{% if NGINX_CONFIG.log.syslog %}
 
   # log config
-{%   if NGINX_CONFIG.log.syslog_host is not none %}
-  access_log syslog:server={{ NGINX_CONFIG.log.syslog_host }},tag=nginx_https_{{ name }},nohostname,severity=info combined;
-  error_log  syslog:server={{ NGINX_CONFIG.log.syslog_host }},tag=nginx_https_{{ name }},nohostname,severity=error;
-{%   else %}
-  access_log syslog:server=unix:/dev/log,tag=nginx_https_{{ name }},nohostname,severity=info combined;
-  error_log  syslog:server=unix:/dev/log,tag=nginx_https_{{ name }},nohostname,severity=error;
-{%   endif %}
+{% if NGINX_CONFIG.log.syslog and NGINX_CONFIG.log.syslog_host is not none %}
+  access_log syslog:server={{ NGINX_CONFIG.log.syslog_host }}:{{ NGINX_CONFIG.log.syslog_port }},tag={{ NGINX_CONFIG.log.prefix_ssl }}{{ name }},nohostname,severity=info combined;
+  error_log  syslog:server={{ NGINX_CONFIG.log.syslog_host }}:{{ NGINX_CONFIG.log.syslog_port }},tag={{ NGINX_CONFIG.log.prefix_ssl }}{{ name }},nohostname,severity=error;
+{% elif NGINX_CONFIG.log.syslog %}
+  access_log syslog:server=unix:/dev/log,tag={{ NGINX_CONFIG.log.prefix_ssl }}{{ name }},nohostname,severity=info combined;
+  error_log  syslog:server=unix:/dev/log,tag={{ NGINX_CONFIG.log.prefix_ssl }}{{ name }},nohostname,severity=error;
 {% elif NGINX_CONFIG.log.per_site %}
   error_log {{ NGINX_CONFIG.log.path }}/{{ name }}_error.log;
   access_log {{ NGINX_CONFIG.log.path }}/{{ name }}_access.log;
@@ -77,34 +73,33 @@ server {
   ssl_stapling_verify off;
 {% endif %}
 
+{% if site.security.restrict_methods %}
   # security config
-{% if restrict_methods %}
-  if ($request_method !~ ^(GET|POST)$ ) {
+  if ($request_method !~ ^({{ nginx_restricted_methods | join('|') }})$ ) {
     return 405;
   }
 {% endif %}
 
-{% if NGINX_CONFIG.config|length > 0 %}
+{% if NGINX_CONFIG.config | length > 0 %}
   # global config
-{% endif %}
 {% for setting, value in NGINX_CONFIG.config.items() %}
 {%   if setting not in nginx_config_graylist %}
   {{ setting }} {{ value }};
 {%   endif %}
 {% endfor %}
-
-{% if site.config|length > 0 %}
-  # site-specific config
 {% endif %}
+
+{% if site.config | length > 0 %}
+  # site-specific config
 {% for setting, value in site.config.items() %}
 {%   if setting not in nginx_config_graylist %}
   {{ setting }} {{ value }};
 {%   endif %}
 {% endfor %}
-
-{% if site.headers|length > 0 %}
-  # site-specific headers
 {% endif %}
+
+{% if site.headers | length > 0 %}
+  # site-specific headers
 {%   for header, value in site.headers.items() %}
 {%     if 'header' in header %}
   {{ header }} {{ value }};
@@ -112,6 +107,7 @@ server {
   add_header {{ header }} {{ value }};
 {%     endif %}
 {%   endfor %}
+{% endif %}
 
   location / {
 {% if site.mode == 'proxy' %}
@@ -143,7 +139,7 @@ server {
 
   }
 
-{% if site.config_additions|length > 0 %}
+{% if site.config_additions | length > 0 %}
   # additional lines
 {% endif %}
 {% for line in site.config_additions %}

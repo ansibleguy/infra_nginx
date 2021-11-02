@@ -1,8 +1,5 @@
 ---
 
-# main switches
-restrict_methods: true  # disable anything but GET/POST methods; if you're running a web-application you might need to disable this filter
-
 # default config => is overwritten by provided config
 default_nginx:
   user: 'nobody'
@@ -14,6 +11,9 @@ default_nginx:
     per_site: true
     syslog: true
     syslog_host:
+    syslog_port: 514
+    prefix_ue: 'nginx_plain_'
+    prefix_ssl: 'nginx_ssl_'
 
   config:
     autoindex: 'off'
@@ -36,9 +36,18 @@ default_nginx:
     ssl_ciphers: 'ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-SHA384:ECDHE-RSA-AES128-SHA256:ECDHE-RSA-AES256-SHA:ECDHE-RSA-AES128-SHA:DHE-RSA-AES256-SHA256:DHE-RSA-AES128-SHA256:DHE-RSA-AES256-SHA:DHE-RSA-AES128-SHA:ECDHE-RSA-DES-CBC3-SHA:EDH-RSA-DES-CBC3-SHA:AES256-GCM-SHA384:AES128-GCM-SHA256:AES256-SHA256:AES128-SHA256:AES256-SHA:AES128-SHA:DES-CBC3-SHA:HIGH:!aNULL:!eNULL:!EXPORT:!DES:!MD5:!PSK:!RC4'
     # limit_conn: 'conns 100'  # zero size shared memory zone
 
+  letsencrypt:
+    key_size: 4096
+    path: '/etc/letsencrypt'
+    path_key: '/etc/ssl/private'
+    path_cert: '/etc/ssl/certs'
+    renew_timer: 'Mon *-*-* 01:00:00'
+    verbosity: 'v'
+
 NGINX_CONFIG: "{{ default_nginx | combine(nginx, recursive=true) }}"
 
 default_site_config:
+  state: 'present'
   mode: 'proxy'
   port_plain: 80
   port_ssl: 443
@@ -52,9 +61,12 @@ default_site_config:
   config_additions: []  # lines that will 1-to-1 be appended to the site-config (directory config etc.)
   # BE AWARE that you might break the config-syntax if you're not careful
 
+  security:
+    restrict_methods: true  # disable anything but GET/POST/HEAD methods; if you're running a web-application you might need to disable this filter
+
   redirect:
     target: 'https://github.com/ansibleguy'
-    request: true
+    request_uri: true
 
   proxy:
     ip: '127.0.0.1'
@@ -93,8 +105,10 @@ default_site_config:
     'X-Content-Type-Options': 'nosniff'
     'X-Permitted-Cross-Domain-Policies': 'none'
     'X-XSS-Protection': '"1; mode=block"'
+    'Set-Cookie': '"Path=/;HttpOnly;Secure;SameSite=none"'
     # 'Permissions-Policy': ''
 
 # packages
 nginx_packages: ['nginx']
 nginx_config_graylist: ['ssl_stapling', 'ssl_stapling_verify']
+nginx_restricted_methods: ['GET', 'POST', 'HEAD']

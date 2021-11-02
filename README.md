@@ -26,7 +26,7 @@ Role to configure a nginx webserver.
     * self-signed => Generate self-signed ones
     * letsencrypt => _Use letsencrypt certbot (NOT YET IMPLEMENTED)_
   * Default opt-ins:
-    * restricting methods to POST/GET
+    * restricting methods to POST/GET/HEAD
 
 
 ## Info

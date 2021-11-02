@@ -5,31 +5,43 @@
     pkg: "{{ nginx_packages }}"
   tags: [base]
 
-- name: Nginx | Debian | Adding nginx site
-  ansible.builtin.include_tasks: add_site.yml
-  vars:
-    site: "{{ default_site_config | combine(site_item.value, recursive=true) }}"
-    name: "{{ site_item.key | safe_key }}"
-  when: site_item.state | default('present') == 'present'
-  loop_control:
-    loop_var: site_item
-  with_dict: "{{ NGINX_CONFIG.sites }}"
-  tags: [config, sites, certs]
-
 - name: Nginx | Debian | Removing nginx site
   ansible.builtin.include_tasks: rm_site.yml
   vars:
     site: "{{ default_site_config | combine(site_item.value, recursive=true) }}"
     name: "{{ site_item.key | safe_key }}"
-  when: site_item.state | default('present') != 'present'
+  when: site_item.state != 'present'
   loop_control:
     loop_var: site_item
   with_dict: "{{ NGINX_CONFIG.sites }}"
   tags: [config, sites, certs]
 
-- name: Nginx | Debian | Enabling nginx service
+- name: Nginx | Debian | Reloading nginx
+  ansible.builtin.systemd:
+    name: 'nginx.service'
+    state: reloaded
+  tags: [base, config, sites, certs]
+
+- name: Nginx | Debian | Adding nginx site
+  ansible.builtin.include_tasks: add_site.yml
+  vars:
+    site: "{{ default_site_config | combine(site_item.value, recursive=true) }}"
+    name: "{{ site_item.key | safe_key }}"
+  when: site_item.state == 'present'
+  loop_control:
+    loop_var: site_item
+  with_dict: "{{ NGINX_CONFIG.sites }}"
+  tags: [config, sites, certs]
+
+- name: Nginx | Debian | Starting/Enabling nginx
   ansible.builtin.systemd:
     name: 'nginx.service'
     enabled: yes
     state: started
   tags: [base]
+
+- name: Nginx | Debian | Reloading nginx
+  ansible.builtin.systemd:
+    name: 'nginx.service'
+    state: reloaded
+  tags: [base, config, sites, certs]

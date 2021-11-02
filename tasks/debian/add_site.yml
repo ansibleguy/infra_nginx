@@ -18,7 +18,6 @@
   ansible.builtin.template:
     src: 'templates/etc/nginx/sites-available/site.j2'
     dest: "/etc/nginx/sites-available/site_{{ name }}"
-  notify: 'restart_nginx'
   tags: [config, sites]
 
 - name: "Nginx | Debian | Site {{ name }} | Enabling site config"
@@ -26,5 +25,4 @@
     src: "/etc/nginx/sites-available/site_{{ name }}"
     dest: "/etc/nginx/sites-enabled/site_{{ name }}"
     state: link
-  notify: 'restart_nginx'
   tags: [config, sites]
