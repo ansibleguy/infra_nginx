@@ -1,5 +1,9 @@
 ---
 
+- name: "Nginx | Debian | Site {{ name }} | Preparing certs"
+  ansible.builtin.include_tasks: prep_certs.yml
+  tags: [certs, sites]
+
 - name: "Nginx | Debian | Site {{ name }} | Processing local certs"
   ansible.builtin.include_tasks: add_certs_local.yml
   when: "site.ssl.mode in ['self-signed', 'local']"

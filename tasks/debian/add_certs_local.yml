@@ -2,19 +2,19 @@
 
 - name: "Nginx | Debian | Site {{ name }} | Certs | Local | Checking if cert pub exists"
   ansible.builtin.stat:
-    path: "{{ site.ssl.file_pub }}"
+    path: "{{ local_cert_pub }}"
   register: exists_cert_pub
   tags: [certs, sites]
 
 - name: "Nginx | Debian | Site {{ name }} | Certs | Local | Checking if cert pk exists"
   ansible.builtin.stat:
-    path: "{{ site.ssl.file_key }}"
+    path: "{{ local_cert_key }}"
   register: exists_cert_key
   tags: [certs, sites]
 
 - name: "Nginx | Debian | Site {{ name }} | Certs | Local | Creating public directory"
   ansible.builtin.file:
-    path: "{{ site.ssl.file_pub | dirname }}"
+    path: "{{ local_cert_pub | dirname }}"
     state: directory
     mode: 0755
   when: not exists_cert_pub.stat.exists
@@ -22,7 +22,7 @@
 
 - name: "Nginx | Debian | Site {{ name }} | Certs | Local | Creating private directory"
   ansible.builtin.file:
-    path: "{{ site.ssl.file_key | dirname }}"
+    path: "{{ local_cert_key | dirname }}"
     state: directory
     mode: 0750
     group: "{% if 'ssl-cert' in groups %}ssl-cert{% else %}{{ NGINX_CONFIG.group }}{% endif %}"
@@ -44,15 +44,13 @@
   when: >
     site.ssl.mode == 'self-signed' and
     (not exists_cert_key.stat.exists or
-    not exists_cert_pub.stat.exists) and
-    ((copy_cert_pub.failed is defined and copy_cert_pub.failed) or
-    (copy_cert_key.failed is defined and copy_cert_key.failed))
+    not exists_cert_pub.stat.exists)
   tags: [certs, sites]
 
 - name: "Nginx | Debian | Site {{ name }} | Certs | Local | Trying to copy cert pub"
   ansible.builtin.copy:
-    dest: "{{ site.ssl.file_pub }}"
-    src: "files/certs/{{ site.ssl.file_pub }}"
+    dest: "{{ local_cert_pub }}"
+    src: "files/certs/{{ local_cert_pub }}"
     mode: 0444
   ignore_errors: true
   register: copy_cert_pub
@@ -63,8 +61,8 @@
 
 - name: "Nginx | Debian | Site {{ name }} | Certs | Local | Trying to copy cert pk"
   ansible.builtin.copy:
-    dest: "{{ site.ssl.file_key }}"
-    src: "files/certs/{{ site.ssl.file_key }}"
+    dest: "{{ local_cert_key }}"
+    src: "files/certs/{{ local_cert_key }}"
     mode: 0444  # since owner is not possible on 'nobody'
   no_log: true
   register: copy_cert_key

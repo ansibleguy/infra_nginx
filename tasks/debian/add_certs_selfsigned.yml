@@ -7,14 +7,14 @@
 
 - name: "Nginx | Debian | Site {{ name }} | Certs | SelfSigned | Generate Self-signed certificate (1/3)"
   community.crypto.openssl_privatekey:
-    path: "{{ site.ssl.file_key }}"
+    path: "{{ local_cert_key }}"
     mode: 0444
   tags: [certs, sites]
 
 - name: "Nginx | Debian | Site {{ name }} | Certs | SelfSigned | Generate Self-signed certificate (2/3)"
   community.crypto.openssl_csr:
-    path: "{{ site.ssl.file_csr }}"
-    privatekey_path: "{{ site.ssl.file_key }}"
+    path: "{{ local_cert_csr }}"
+    privatekey_path: "{{ local_cert_key }}"
     country_name: "{{ site.ssl.csr_data.country }}"
     organization_name: "{{ site.ssl.csr_data.org }}"
     email_address: "{{ site.ssl.csr_data.email }}"
@@ -24,9 +24,9 @@
 
 - name: "Nginx | Debian | Site {{ name }} | Certs | SelfSigned | Generate Self-signed certificate (3/3)"
   community.crypto.x509_certificate:
-    path: "{{ site.ssl.file_pub }}"
-    privatekey_path: "{{ site.ssl.file_key }}"
-    csr_path: "{{ site.ssl.file_csr }}"
+    path: "{{ local_cert_pub }}"
+    privatekey_path: "{{ local_cert_key }}"
+    csr_path: "{{ local_cert_csr }}"
     provider: selfsigned
     valid_in: 3650d
     mode: 0444

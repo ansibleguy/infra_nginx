@@ -1,5 +1,9 @@
 ---
 
+- name: "Nginx | Debian | Site {{ name }} | Preparing certs"
+  ansible.builtin.include_tasks: prep_certs.yml
+  tags: [certs, sites]
+
 - name: "Nginx | Debian | Remove Site {{ name }} | Removing config"
   ansible.builtin.file:
     path: "{{ item }}"
@@ -14,13 +18,13 @@
     path: "{{ item }}"
     state: absent
   loop:
-    - "{{ site.ssl.file_pub }}"
-    - "{{ site.ssl.file_key }}"
+    - "{{ local_cert_pub }}"
+    - "{{ local_cert_key }}"
   when: "site.ssl.mode in ['self-signed', 'local']"
 
 - name: "Nginx | Debian | Remove Site {{ name }} | Removing self-signed certificate csr"
   ansible.builtin.file:
-    path: "{{ site.ssl.file_csr }}"
+    path: "{{ local_cert_csr }}"
     state: absent
   when: site.ssl.mode == 'self-signed'
 

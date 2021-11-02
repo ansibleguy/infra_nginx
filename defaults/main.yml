@@ -15,28 +15,7 @@ default_nginx:
     syslog: true
     syslog_host:
 
-  config:
-    autoindex: 'off'
-    server_tokens: 'off'
-    proxy_pass_request_headers: 'on'
-    proxy_connect_timeout: 150
-    proxy_send_timeout: 100
-    proxy_read_timeout: 100
-    proxy_buffers: '4 32k'
-    client_max_body_size: '50m'
-    client_body_buffer_size: '128k'
-    client_header_buffer_size: '2k'
-    large_client_header_buffers: '3 1k'
-    ssl_protocols: 'TLSv1.2 TLSv1.3'
-    ssl_prefer_server_ciphers: 'on'
-    ssl_ciphers: 'ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-SHA384:ECDHE-RSA-AES128-SHA256:ECDHE-RSA-AES256-SHA:ECDHE-RSA-AES128-SHA:DHE-RSA-AES256-SHA256:DHE-RSA-AES128-SHA256:DHE-RSA-AES256-SHA:DHE-RSA-AES128-SHA:ECDHE-RSA-DES-CBC3-SHA:EDH-RSA-DES-CBC3-SHA:AES256-GCM-SHA384:AES128-GCM-SHA256:AES256-SHA256:AES128-SHA256:AES256-SHA:AES128-SHA:DES-CBC3-SHA:HIGH:!aNULL:!eNULL:!EXPORT:!DES:!MD5:!PSK:!RC4'
-    ssl_session_cache: 'shared:SSL:10m'
-    ssl_session_timeout: '10m'
-    ssl_stapling: 'on'
-    ssl_stapling_verify: 'on'
-    limit_conn: 'conns 100'
-    client_body_timeout: '5s'
-    client_header_timeout: '5s'
+  config: {}
 
 NGINX_CONFIG: "{{ default_nginx | combine(nginx, recursive=true) }}"
 
@@ -50,7 +29,28 @@ default_site_config:
   user: 'nobody'
   group: 'nobody'
 
-  config: {}  # site-specific setting-value pairs
+  config:  # site-specific setting-value pairs
+    autoindex: 'off'
+    server_tokens: 'off'
+    proxy_pass_request_headers: 'on'
+    proxy_connect_timeout: 150
+    proxy_send_timeout: 100
+    proxy_read_timeout: 100
+    proxy_buffers: '4 32k'
+    client_max_body_size: '50m'
+    client_body_buffer_size: '128k'
+    client_header_buffer_size: '2k'
+    client_header_timeout: '5s'
+    large_client_header_buffers: '3 1k'
+    ssl_session_cache: 'shared:SSL:10m'
+    ssl_session_timeout: '10m'
+    client_body_timeout: '5s'
+    ssl_protocols: 'TLSv1.2 TLSv1.3'
+    ssl_prefer_server_ciphers: 'off'
+    ssl_ciphers: 'ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-SHA384:ECDHE-RSA-AES128-SHA256:ECDHE-RSA-AES256-SHA:ECDHE-RSA-AES128-SHA:DHE-RSA-AES256-SHA256:DHE-RSA-AES128-SHA256:DHE-RSA-AES256-SHA:DHE-RSA-AES128-SHA:ECDHE-RSA-DES-CBC3-SHA:EDH-RSA-DES-CBC3-SHA:AES256-GCM-SHA384:AES128-GCM-SHA256:AES256-SHA256:AES128-SHA256:AES256-SHA:AES128-SHA:DES-CBC3-SHA:HIGH:!aNULL:!eNULL:!EXPORT:!DES:!MD5:!PSK:!RC4'
+    # limit_conn: 'conns 100'  # zero size shared memory zone
+
+
   config_additions: []  # lines that will 1-to-1 be appended to the site-config (directory config etc.)
   # BE AWARE that you might break the config-syntax if you're not careful
 
@@ -76,9 +76,9 @@ default_site_config:
 
   ssl:
     mode: 'self-signed'  # local/selfsigned/letsencrypt
-    file_pub: '/etc/ssl/certs/DOMAIN.crt'  # should use the certificate chain => top is server cert; bottom root cert
-    file_key: '/etc/ssl/private/DOMAIN.key'
-    file_csr: '/etc/ssl/certs/DOMAIN.csr'
+    file_pub: '/etc/nginx/ssl/DOMAIN.crt'  # should use the certificate chain => top is server cert; bottom root cert
+    file_key: '/etc/nginx/ssl/DOMAIN.key'
+    file_csr: '/etc/nginx/ssl/DOMAIN.csr'
     file_ca:
     csr_data:
       country: 'AT'
@@ -99,3 +99,4 @@ default_site_config:
 
 # packages
 nginx_packages: ['nginx']
+nginx_config_graylist: ['ssl_stapling', 'ssl_stapling_verify']

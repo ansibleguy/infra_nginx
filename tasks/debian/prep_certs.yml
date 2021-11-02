@@ -1,0 +1,23 @@
+---
+
+- name: "Nginx | Debian | Site {{ name }} | Setting cert names (1/2)"
+  ansible.builtin.set_fact:
+    local_cert_pub: "{{ site.ssl.file_pub.replace('DOMAIN', name) }}"
+    local_cert_key: "{{ site.ssl.file_key.replace('DOMAIN', name) }}"
+    local_cert_csr: "{{ site.ssl.file_csr.replace('DOMAIN', name) }}"
+  when:
+    - site.ssl.file_pub == default_site_config.ssl.file_pub
+    - site.ssl.file_key == default_site_config.ssl.file_key
+    - site.ssl.file_csr == default_site_config.ssl.file_csr
+  tags: [certs, sites]
+
+- name: "Nginx | Debian | Site {{ name }} | Setting cert names (2/2)"
+  ansible.builtin.set_fact:
+    local_cert_pub: "{{ site.ssl.file_pub }}"
+    local_cert_key: "{{ site.ssl.file_key }}"
+    local_cert_csr: "{{ site.ssl.file_csr }}"
+  when: >
+    site.ssl.file_pub != default_site_config.ssl.file_pub or
+    site.ssl.file_key != default_site_config.ssl.file_key or
+    site.ssl.file_csr != default_site_config.ssl.file_csr
+  tags: [certs, sites]

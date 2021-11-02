@@ -21,15 +21,14 @@ server {
 {% endif %}
 
 {% if site.headers|length > 0 %}
-    # site-specific headers
+  # site-specific headers
 {% endif %}
 {%   for header, value in site.headers.items() %}
 {%     if 'header' in header %}
-    {{ header }} {{ value }};
+  {{ header }} {{ value }};
 {%     else %}
-    add_header {{ header }} {{ value }};
+  add_header {{ header }} {{ value }};
 {%     endif %}
-
 {%   endfor %}
 
   # security config
@@ -67,9 +66,9 @@ server {
 {% endif %}
 
   # ssl config
-  ssl_certificate_key '{{ site.ssl.file_key }}';
-  ssl_certificate     '{{ site.ssl.file_pub }}';  # should use the certificate chain => top is server cert; bottom root cert
-{% if site.ssl.file_ca is not none %}
+  ssl_certificate_key '{{ local_cert_key }}';
+  ssl_certificate     '{{ local_cert_pub }}';  # should use the certificate chain => top is server cert; bottom root cert
+{% if site.ssl.file_ca is none %}
   ssl_stapling on;
   ssl_stapling_verify on;
 {% else %}
@@ -78,16 +77,44 @@ server {
   ssl_stapling_verify off;
 {% endif %}
 
+  # security config
+{% if restrict_methods %}
+  if ($request_method !~ ^(GET|POST)$ ) {
+    return 405;
+  }
+{% endif %}
+
+{% if site.config|length > 0 %}
+  # site-specific config
+{% endif %}
+{% for setting, value in site.config.items() %}
+{%   if setting not in nginx_config_graylist %}
+  {{ setting }} {{ value }};
+{%   endif %}
+{% endfor %}
+
+{% if site.headers|length > 0 %}
+  # site-specific headers
+{% endif %}
+{%   for header, value in site.headers.items() %}
+{%     if 'header' in header %}
+  {{ header }} {{ value }};
+{%     else %}
+  add_header {{ header }} {{ value }};
+{%     endif %}
+{%   endfor %}
+
   location / {
 {% if site.mode == 'proxy' %}
-
-    proxy_pass {{ site.proxy.proto }}://{{ site.proxy.ip }}:{{ site.proxy.ip }};
+    # proxy-mode config
+    proxy_pass {{ site.proxy.proto }}://{{ site.proxy.ip }}:{{ site.proxy.port }};
 
 {%   for option, value in site.proxy.headers.items() %}
     proxy_set_header {{ option }} {{ value }};
 {%   endfor %}
 
 {% elif site.mode == 'redirect' %}
+    # redirect-mode config
 {%   if site.redirect.request_uri %}
     return 302 https://{{ site.redirect.target }}$request_uri;
 {%   else %}
@@ -95,6 +122,7 @@ server {
 {%   endif %}
 
 {% elif site.mode == 'serve' %}
+    # serve-mode config
     root {{ site.serve.path }};
     index {% for ind in site.serve.index %}{{ ind }} {% endfor %};
 
@@ -104,49 +132,13 @@ server {
 
 {% endif %}
 
-    # security config
-{% if restrict_methods %}
-    if ($request_method !~ ^(GET|POST)$ ) {
-        return 405;
-    }
-{% endif %}
-
-{% if NGINX_CONFIG.config|length > 0 %}
-    # global config
-{% endif %}
-{% for setting, value in NGINX_CONFIG.config.items() %}
-    {{ setting }} {{ value }};
-
-{% endfor %}
-
-{% if site.config|length > 0 %}
-    # site-specific config
-{% endif %}
-{% for setting, value in site.config.items() %}
-    {{ setting }} {{ value }};
-
-{% endfor %}
-
-{% if site.headers|length > 0 %}
-    # site-specific headers
-{% endif %}
-{%   for header, value in site.headers.items() %}
-{%     if 'header' in header %}
-    {{ header }} {{ value }};
-{%     else %}
-    add_header {{ header }} {{ value }};
-{%     endif %}
-
-{%   endfor %}
+  }
 
 {% if site.config_additions|length > 0 %}
-    # additional lines
+  # additional lines
 {% endif %}
 {% for line in site.config_additions %}
-    {{ line }}
-
+  {{ line }}
 {% endfor %}
-
-  }
 
 }
