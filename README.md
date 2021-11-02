@@ -43,6 +43,10 @@ Role to configure a nginx webserver.
 * **Note:** If you want all domain-names to get 'catched' by a site/server you need to add an underline '_' as alias or domain!<br>
 This will also be done automatically if no domain is supplied.
 
+## Requirements
+
+* Community collection: ```ansible-galaxy install -r requirements.yml```
+
 
 ## Usage
 
@@ -87,6 +91,11 @@ nginx:
       redirect:
         target: 'https://github.com/ansibleguy'
 
+```
+
+Run the playbook:
+```bash
+ansible-playbook -K -D -i inventory/hosts.yml playbook.yml
 ```
 
 There are also some useful **tags** available:

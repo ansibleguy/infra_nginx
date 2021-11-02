@@ -17,3 +17,6 @@ galaxy_info:
     - 'nginx'
     - 'reverseproxy'
     - 'webserver'
+
+collections:
+  - 'community.crypto'
