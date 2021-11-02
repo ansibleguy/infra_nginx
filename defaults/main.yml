@@ -1,68 +1,101 @@
 ---
 
-NGINX_MODE: "{{ nginx.mode | default('proxy') }}"  # proxy/redirect/serve
-NGINX_PORT_PLAIN: "{{ nginx.port_plain | default(80) }}"
-NGINX_PORT_SSL: "{{ nginx.port_ssl | default(443) }}"
-NGINX_DOMAIN: "{{ nginx.domain | default('_') }}"
-NGINX_ALIASES: "{{ nginx.aliases | default([]) }}"
-NGINX_IP: "{{ nginx.ip | default('') }}"
-NGINX_USER: "{{ nginx.user | default('nobody') }}"
-NGINX_GROUP: "{{ nginx.group | default('nogroup') }}"
+# main switches
+restrict_methods: true  # disable anything but GET/POST methods; if you're running a web-application you might need to disable this filter
 
-# mode redirect
-NGINX_REDIRECT: "{{ nginx_redirect | default('https://ansibleguy.net') }}"
-NGINX_REDIRECT_REQUEST: "{{ nginx.redirect_request | default(true) }}"
+# default config => is overwritten by provided config
+default_nginx:
+  user: 'nobody'
+  group: 'nogroup'
+  sites: {}
 
-# mode proxy
-NGINX_PROXY_IP: "{{ nginx.proxy_ip | default('127.0.0.1') }}"
-NGINX_PROXY_PORT: "{{ nginx.proxy_port | default(8080) }}"
-NGINX_PROXY_PROTO: 'http'
-NGINX_PROXY_HEADERS:
-  Host: '$http_host'
-  X-Forwarded-Host: '$host'
-  X-Forwarded-Server: '$host'
-  X-Forwarded-For: '$proxy_add_x_forwarded_for'
-  X-Forwarded-Proto: '$scheme'
-  X-Real-IP: '$remote_addr'
+  log:
+    path: '/var/log/nginx'
+    per_site: true
+    syslog: true
+    syslog_host:
 
-# mode server
-NGINX_SERVE_PATH: "{{ nginx.serve_path | default('/var/www/html') }}"
-NGINX_SERVE_INDEX: "{{ nginx.serve_index | default(['index.html']) }}"
-NGINX_SERVE_403: "{{ nginx.serve_403 | default('') }}"
-NGINX_SERVE_404: "{{ nginx.serve_404 | default('') }}"
-NGINX_SERVE_500: "{{ nginx.serve_500 | default('') }}"
+  config:
+    autoindex: 'off'
+    server_tokens: 'off'
+    proxy_pass_request_headers: 'on'
+    proxy_connect_timeout: 150
+    proxy_send_timeout: 100
+    proxy_read_timeout: 100
+    proxy_buffers: '4 32k'
+    client_max_body_size: '50m'
+    client_body_buffer_size: '128k'
+    client_header_buffer_size: '2k'
+    large_client_header_buffers: '3 1k'
+    ssl_protocols: 'TLSv1.2 TLSv1.3'
+    ssl_prefer_server_ciphers: 'on'
+    ssl_ciphers: 'ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-SHA384:ECDHE-RSA-AES128-SHA256:ECDHE-RSA-AES256-SHA:ECDHE-RSA-AES128-SHA:DHE-RSA-AES256-SHA256:DHE-RSA-AES128-SHA256:DHE-RSA-AES256-SHA:DHE-RSA-AES128-SHA:ECDHE-RSA-DES-CBC3-SHA:EDH-RSA-DES-CBC3-SHA:AES256-GCM-SHA384:AES128-GCM-SHA256:AES256-SHA256:AES128-SHA256:AES256-SHA:AES128-SHA:DES-CBC3-SHA:HIGH:!aNULL:!eNULL:!EXPORT:!DES:!MD5:!PSK:!RC4'
+    ssl_session_cache: 'shared:SSL:10m'
+    ssl_session_timeout: '10m'
+    ssl_stapling: 'on'
+    ssl_stapling_verify: 'on'
+    limit_conn: 'conns 100'
+    client_body_timeout: '5s'
+    client_header_timeout: '5s'
 
-# ssl config
-NGINX_CERT: 'local'  # local/letsencrypt
-NGINX_CERT_PATH: "{{ nginx.cert_path | default('/etc/ssl') }}"
-NGINX_CERT_PUB_PATH: "{{ nginx.cert_pub_path | default(NGINX_CERT_PATH + '/certs') }}"
-NGINX_CERT_KEY_PATH: "{{ nginx.cert_key_path | default(NGINX_CERT_PATH + '/private') }}"
-NGINX_CERT_PUB_FILE: "{{ nginx.cert_pub | default(NGINX_DOMAIN) }}.crt"  # should use the certificate chain => top is server cert; bottom root cert
-NGINX_CERT_KEY_FILE: "{{ nginx.cert_key | default(NGINX_DOMAIN) }}.key"
-NGINX_CERT_CSR_FILE: "{{ nginx.cert_csr | default(NGINX_DOMAIN) }}.csr"
-NGINX_CERT_CA_FILE: "{{ nginx.cert_ca | default('') }}"
-NGINX_CERT_CSR_DATA:
-  country: 'AT'
-  org: 'AnsibleGuy'
-  email: 'guy@ansibleguy.net'
-  cn: 'Nginx Certificate'
+NGINX_CONFIG: "{{ default_nginx | combine(nginx, recursive=true) }}"
 
-# other config
-NGINX_LOG_DIR: "{{ nginx.log_dir | default('/var/log/nginx') }}"
-NGINX_LOG_PER_SITE: "{{ nginx.log_per_site | default(true) }}"
-NGINX_LOG_FORMAT: "main '$remote_addr - $remote_user [$time_local]  $status \"$request\" $body_bytes_sent \"$http_referer\" \"$http_user_agent\" \"$http_x_forwarded_for\"'"
+default_site_config:
+  mode: 'proxy'
+  port_plain: 80
+  port_ssl: 443
+  domain: '_'
+  aliases: []
+  ip:
+  user: 'nobody'
+  group: 'nobody'
 
-NGINX_OPTIONS:
-  autoindex: "{{ nginx.autoindex | default('off') }}"
-  server_tokens: "{{ nginx.server_tokens | default('off') }}"
-#  server_names_hash_bucket_size: "{{ nginx.server_names_hash_bucket_size | default(64) }}"
-#  log_format: "{{ nginx.log_format | default(NGINX_LOG_FORMAT) }}"
-  proxy_pass_request_headers: "{{ nginx.proxy_pass_request_headers | default('on') }}"
-  proxy_connect_timeout: "{{ nginx.proxy_connect_timeout | default(150) }}"
-  proxy_send_timeout: "{{ nginx.proxy_send_timeout | default(100) }}"
-  proxy_read_timeout: "{{ nginx.proxy_read_timeout | default(100) }}"
-  proxy_buffers: "{{ nginx.proxy_buffers | default('4 32k') }}"
-  client_max_body_size: "{{ nginx.client_max_body_size | default('8m') }}"
-  client_body_buffer_size: "{{ nginx.client_body_buffer_size | default('128k') }}"
+  config: {}  # site-specific setting-value pairs
+  config_additions: []  # lines that will 1-to-1 be appended to the site-config (directory config etc.)
+  # BE AWARE that you might break the config-syntax if you're not careful
 
-NGINX_ADDITIONS: "{{ nginx.additional | default({}) }}"
+  redirect:
+    target: 'https://github.com/ansibleguy'
+    request: true
+
+  proxy:
+    ip: '127.0.0.1'
+    port: 8080
+    proto: 'http'
+    headers:
+      Host: '$http_host'
+      X-Forwarded-Host: '$host'
+      X-Forwarded-Server: '$host'
+      X-Forwarded-For: '$proxy_add_x_forwarded_for'
+      X-Forwarded-Proto: '$scheme'
+      X-Real-IP: '$remote_addr'
+
+  serve:
+    path: '/var/www/html'
+    index: ['index.html']
+
+  ssl:
+    mode: 'self-signed'  # local/selfsigned/letsencrypt
+    file_pub: '/etc/ssl/certs/DOMAIN.crt'  # should use the certificate chain => top is server cert; bottom root cert
+    file_key: '/etc/ssl/private/DOMAIN.key'
+    file_csr: '/etc/ssl/certs/DOMAIN.csr'
+    file_ca:
+    csr_data:
+      country: 'AT'
+      org: 'AnsibleGuy'
+      email: 'nginx@template.ansibleguy.net'
+      cn: 'Nginx Certificate'
+
+  headers:
+    # if first word does not include 'header' => prepend 'add_header'
+    'Strict-Transport-Security': '"max-age=31536000; includeSubDomains" always'
+    'Referrer-Policy': 'same-origin'
+    'Content-Security-Policy': "\"default-src 'self'\""
+    'X-Frame-Options': 'DENY'
+    'X-Content-Type-Options': 'nosniff'
+    'X-Permitted-Cross-Domain-Policies': 'none'
+    'X-XSS-Protection': '"1; mode=block"'
+    # 'Permissions-Policy': ''
+
+# packages
+nginx_packages: ['nginx']

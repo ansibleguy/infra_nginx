@@ -2,32 +2,34 @@
 
 - name: Nginx | Debian | Installing nginx
   ansible.builtin.apt:
-    pkg: ['nginx']
+    pkg: "{{ nginx_packages }}"
+  tags: [base]
 
-- name: Nginx | Debian | Configuring certificates
-  ansible.builtin.import_tasks: debian/certs.yml
+- name: Nginx | Debian | Adding nginx site
+  ansible.builtin.include_tasks: add_site.yml
+  vars:
+    site: "{{ default_site_config | combine(site_item.value, recursive=true) }}"
+    name: "{{ site_item.key | safe_key }}"
+  when: site_item.state | default('present') == 'present'
+  loop_control:
+    loop_var: site_item
+  with_dict: "{{ NGINX_CONFIG.sites }}"
+  tags: [config, sites, certs]
 
-- name: Nginx | Debian | Adding site config
-  ansible.builtin.template:
-    src: 'templates/etc/nginx/sites-available/site.j2'
-    dest: "/etc/nginx/sites-available/site_{{ NGINX_DOMAIN }}"
-  register: site_config
-
-- name: Nginx | Debian | Enabling site config
-  ansible.builtin.file:
-    src: "/etc/nginx/sites-available/site_{{ NGINX_DOMAIN }}"
-    dest: "/etc/nginx/sites-enabled/site_{{ NGINX_DOMAIN }}"
-    state: link
-  register: site_state
+- name: Nginx | Debian | Removing nginx site
+  ansible.builtin.include_tasks: rm_site.yml
+  vars:
+    site: "{{ default_site_config | combine(site_item.value, recursive=true) }}"
+    name: "{{ site_item.key | safe_key }}"
+  when: site_item.state | default('present') != 'present'
+  loop_control:
+    loop_var: site_item
+  with_dict: "{{ NGINX_CONFIG.sites }}"
+  tags: [config, sites, certs]
 
 - name: Nginx | Debian | Enabling nginx service
   ansible.builtin.systemd:
     name: 'nginx.service'
     enabled: yes
     state: started
-
-- name: Nginx | Debian | Restarting nginx service
-  ansible.builtin.systemd:
-    name: 'nginx.service'
-    state: restarted
-  when: site_config.changed or site_state.changed
+  tags: [base]

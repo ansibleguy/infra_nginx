@@ -1,95 +1,150 @@
 # http server
 server {
-  listen {{ NGINX_PORT_PLAIN }};
-  server_name {{ NGINX_DOMAIN }}{% for alias in NGINX_ALIASES %} {{ alias }}{% endfor %}{% if NGINX_IP != '' %} {{ NGINX_IP }}{% endif %};
-{% if NGINX_LOG_PER_SITE %}
-#  error_log {{ NGINX_LOG_DIR }}/{{ NGINX_DOMAIN }}_error.log;
-#  access_log {{ NGINX_LOG_DIR }}/{{ NGINX_DOMAIN }}_access.log  main;
+  listen {{ site.port_plain }};
+  server_name {{ site.domain }}{% for alias in site.aliases %} {{ alias }}{% endfor %}{% if site.ip is not none %} {{ site.ip }}{% endif %};
+
+  # log config
+{% if NGINX_CONFIG.log.syslog %}
+{%   if NGINX_CONFIG.log.syslog_host is not none %}
+  access_log syslog:server={{ NGINX_CONFIG.log.syslog_host }},tag=nginx_{{ name }},nohostname,severity=info combined;
+  error_log  syslog:server={{ NGINX_CONFIG.log.syslog_host }},tag=nginx_{{ name }},nohostname,severity=error;
+{%   else %}
+  access_log syslog:server=unix:/dev/log,tag=nginx_{{ name }},nohostname,severity=info combined;
+  error_log  syslog:server=unix:/dev/log,tag=nginx_{{ name }},nohostname,severity=error;
+{%   endif %}
+{% elif NGINX_CONFIG.log.per_site %}
+  error_log {{ NGINX_CONFIG.log.path }}/{{ name }}_error.log;
+  access_log {{ NGINX_CONFIG.log.path }}/{{ name }}_access.log;
 {% else %}
-#  error_log {{ NGINX_LOG_DIR }}/error.log;
-#  access_log {{ NGINX_LOG_DIR }}/access.log  main;
+  error_log {{ NGINX_CONFIG.log.path }}/error.log;
+  access_log {{ NGINX_CONFIG.log.path }}/access.log;
 {% endif %}
 
-  return 301 https://{{ NGINX_DOMAIN }}$request_uri;
+{% if site.headers|length > 0 %}
+    # site-specific headers
+{% endif %}
+{%   for header, value in site.headers.items() %}
+{%     if 'header' in header %}
+    {{ header }} {{ value }};
+{%     else %}
+    add_header {{ header }} {{ value }};
+{%     endif %}
+
+{%   endfor %}
+
+  # security config
+{% if restrict_methods %}
+  if ($request_method !~ ^(GET|POST)$ ) {
+    return 405;
+  }
+{% endif %}
+
+  # redirect all to secure connection
+  return 301 https://{{ site.domain }}$request_uri;
 
 }
 
 # https server
 server {
-  listen {{ NGINX_PORT_SSL }} ssl;
-  server_name {{ NGINX_DOMAIN }}{% for alias in NGINX_ALIASES %} {{ alias }}{% endfor %}{% if NGINX_IP != '' %} {{ NGINX_IP }}{% endif %};
-{% if NGINX_LOG_PER_SITE %}
-#  error_log {{ NGINX_LOG_DIR }}/{{ NGINX_DOMAIN }}_error.log;
-#  access_log {{ NGINX_LOG_DIR }}/{{ NGINX_DOMAIN }}_access.log  main;;
+  listen {{ site.port_ssl }} ssl;
+  server_name {{ site.domain }}{% for alias in site.aliases %} {{ alias }}{% endfor %}{% if site.ip is not none %} {{ site.ip }}{% endif %};
+{% if NGINX_CONFIG.log.syslog %}
+
+  # log config
+{%   if NGINX_CONFIG.log.syslog_host is not none %}
+  access_log syslog:server={{ NGINX_CONFIG.log.syslog_host }},tag=nginx_{{ name }},nohostname,severity=info combined;
+  error_log  syslog:server={{ NGINX_CONFIG.log.syslog_host }},tag=nginx_{{ name }},nohostname,severity=error;
+{%   else %}
+  access_log syslog:server=unix:/dev/log,tag=nginx_{{ name }},nohostname,severity=info combined;
+  error_log  syslog:server=unix:/dev/log,tag=nginx_{{ name }},nohostname,severity=error;
+{%   endif %}
+{% elif NGINX_CONFIG.log.per_site %}
+  error_log {{ NGINX_CONFIG.log.path }}/{{ name }}_error.log;
+  access_log {{ NGINX_CONFIG.log.path }}/{{ name }}_access.log;
 {% else %}
-  error_log {{ NGINX_LOG_DIR }}/error.log;
-  access_log {{ NGINX_LOG_DIR }}/access.log  main;
+  error_log {{ NGINX_CONFIG.log.path }}/error.log;
+  access_log {{ NGINX_CONFIG.log.path }}/access.log;
 {% endif %}
 
   # ssl config
-  ssl_certificate_key '{{ NGINX_CERT_KEY_PATH }}/{{ NGINX_CERT_KEY_FILE }}';
-  ssl_certificate     '{{ NGINX_CERT_PUB_PATH }}/{{ NGINX_CERT_PUB_FILE }}';  # should use the certificate chain => top is server cert; bottom root cert
-{% if NGINX_CERT_CA_FILE == '' %}
+  ssl_certificate_key '{{ site.ssl.file_key }}';
+  ssl_certificate     '{{ site.ssl.file_pub }}';  # should use the certificate chain => top is server cert; bottom root cert
+{% if site.ssl.file_ca is not none %}
   ssl_stapling on;
   ssl_stapling_verify on;
 {% else %}
-  ssl_trusted_certificate {{ NGINX_CERT_PUB_PATH }}{{ NGINX_CERT_CA_FILE }};
+  ssl_trusted_certificate {{ site.ssl.file_ca }};
   ssl_stapling off;
   ssl_stapling_verify off;
 {% endif %}
 
   location / {
-{% if NGINX_MODE == 'proxy' %}
+{% if site.mode == 'proxy' %}
 
-    proxy_pass {{ NGINX_PROXY_PROTO }}://{{ NGINX_PROXY_IP }}:{{ NGINX_PROXY_PORT }};
+    proxy_pass {{ site.proxy.proto }}://{{ site.proxy.ip }}:{{ site.proxy.ip }};
 
-{%   for option, value in NGINX_PROXY_HEADERS.items() %}
+{%   for option, value in site.proxy.headers.items() %}
     proxy_set_header {{ option }} {{ value }};
 {%   endfor %}
 
-{% elif NGINX_MODE == 'redirect' %}
-{%   if NGINX_REDIRECT_REQUEST %}
-    return 302 https://{{ NGINX_REDIRECT }}$request_uri;
+{% elif site.mode == 'redirect' %}
+{%   if site.redirect.request_uri %}
+    return 302 https://{{ site.redirect.target }}$request_uri;
 {%   else %}
-    return 302 https://{{ NGINX_REDIRECT }};
+    return 302 https://{{ site.redirect.target }};
 {%   endif %}
 
-{% elif NGINX_MODE == 'serve' %}
-    root {{ NGINX_SERVE_PATH }};
-    index {% for ind in NGINX_SERVE_INDEX %}{{ ind }} {% endfor %};
+{% elif site.mode == 'serve' %}
+    root {{ site.serve.path }};
+    index {% for ind in site.serve.index %}{{ ind }} {% endfor %};
 
     location / {
-        try_files $uri $uri/ /{{ NGINX_SERVE_INDEX[0] }};
+        try_files $uri $uri/ /{{ site.serve.index[0] }};
     }
-
-{%   if NGINX_SERVE_403 != '' %}
-    error_page 403 /{{ NGINX_SERVE_403 }};
-    location = /{{ NGINX_SERVE_403 }} {
-    }
-{%   endif %}
-{%   if NGINX_SERVE_404 != '' %}
-    error_page 404 /{{ NGINX_SERVE_404 }};
-    location = /{{ NGINX_SERVE_404 }} {
-    }
-{%   endif %}
-{%   if NGINX_SERVE_500 != '' %}
-    error_page 500 502 503 504 /{{ NGINX_SERVE_500 }};
-    location = /{{ NGINX_SERVE_500 }} {
-    }
-{%   endif %}
 
 {% endif %}
 
-    # other options
-{% for option, value in NGINX_OPTIONS.items() %}
-    {{ option }} {{ value }};
+    # security config
+{% if restrict_methods %}
+    if ($request_method !~ ^(GET|POST)$ ) {
+        return 405;
+    }
+{% endif %}
+
+{% if NGINX_CONFIG.config|length > 0 %}
+    # global config
+{% endif %}
+{% for setting, value in NGINX_CONFIG.config.items() %}
+    {{ setting }} {{ value }};
+
 {% endfor %}
 
-{% if NGINX_ADDITIONS|length > 0 %}
-    # additional nginx config
+{% if site.config|length > 0 %}
+    # site-specific config
 {% endif %}
-{% for option, value in NGINX_ADDITIONS.items() %}
-    {{ option }} {{ value }};
+{% for setting, value in site.config.items() %}
+    {{ setting }} {{ value }};
+
+{% endfor %}
+
+{% if site.headers|length > 0 %}
+    # site-specific headers
+{% endif %}
+{%   for header, value in site.headers.items() %}
+{%     if 'header' in header %}
+    {{ header }} {{ value }};
+{%     else %}
+    add_header {{ header }} {{ value }};
+{%     endif %}
+
+{%   endfor %}
+
+{% if site.config_additions|length > 0 %}
+    # additional lines
+{% endif %}
+{% for line in site.config_additions %}
+    {{ line }}
+
 {% endfor %}
 
   }

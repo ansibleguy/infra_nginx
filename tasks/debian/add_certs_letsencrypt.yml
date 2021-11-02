@@ -1,0 +1,8 @@
+---
+
+# to be continued.. (;
+
+- name: "Nginx | Debian | Site {{ name }} | Certs | LetsEncrypt | Not yet supported"
+  ansible.builtin.pause:
+    prompt: 'Sorry, but the nginx LetsEncrypt support is not yet implemented in this role!'
+  tags: [certs, sites]

@@ -1,0 +1,31 @@
+---
+
+- name: "Nginx | Debian | Remove Site {{ name }} | Removing config"
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  register: site_config
+  loop:
+    - "/etc/nginx/sites-enabled/site_{{ name }}"
+    - "/etc/nginx/sites-available/site_{{ name }}"
+
+- name: "Nginx | Debian | Remove Site {{ name }} | Removing local certificates"
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - "{{ site.ssl.file_pub }}"
+    - "{{ site.ssl.file_key }}"
+  when: "site.ssl.mode in ['self-signed', 'local']"
+
+- name: "Nginx | Debian | Remove Site {{ name }} | Removing self-signed certificate csr"
+  ansible.builtin.file:
+    path: "{{ site.ssl.file_csr }}"
+    state: absent
+  when: site.ssl.mode == 'self-signed'
+
+- name: "Nginx | Debian | Remove Site {{ name }} | Restarting nginx service"
+  ansible.builtin.systemd:
+    name: 'nginx.service'
+    state: reloaded
+  when: site_config.changed

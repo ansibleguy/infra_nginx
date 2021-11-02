@@ -1,0 +1,26 @@
+---
+
+- name: "Nginx | Debian | Site {{ name }} | Processing local certs"
+  ansible.builtin.include_tasks: add_certs_local.yml
+  when: "site.ssl.mode in ['self-signed', 'local']"
+  tags: [certs, sites]
+
+- name: "Nginx | Debian | Site {{ name }} | Processing letsencrypt certs"
+  ansible.builtin.include_tasks: add_certs_letsencrypt.yml
+  when: site.ssl.mode == 'letsencrypt'
+  tags: [certs, sites]
+
+- name: "Nginx | Debian | Site {{ name }} | Adding site config"
+  ansible.builtin.template:
+    src: 'templates/etc/nginx/sites-available/site.j2'
+    dest: "/etc/nginx/sites-available/site_{{ name }}"
+  notify: 'restart_nginx'
+  tags: [config, sites]
+
+- name: "Nginx | Debian | Site {{ name }} | Enabling site config"
+  ansible.builtin.file:
+    src: "/etc/nginx/sites-available/site_{{ name }}"
+    dest: "/etc/nginx/sites-enabled/site_{{ name }}"
+    state: link
+  notify: 'restart_nginx'
+  tags: [config, sites]

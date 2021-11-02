@@ -1,42 +1,92 @@
 # Ansible Nginx Role
 
-Role to configure a nginx webserver in one of three basic modes:
-* proxy
-* redirect
-* serve
-
-**Note:** this role currently only supports debian-based systems
+Role to configure a nginx webserver.
 
 **Tested:**
 * Debian 11
 
 ## Functionality
 
-This ansible role will do:
-* Install nginx
-* Configure certificates
-  * Copy certificate files
-  * Generate self-signed ones
-  * _Use letsencrypt certbot (NOT YET AVAILABLE)_
+* Package installation
+  * Ansible dependencies (_minimal_)
+  * Nginx
+* Configuration
+  * Support for multiple sites/servers
+  * Three config-modes:
+    * proxy (_default_)
+    * serve
+    * redirect
+  * Default config:
+    * Disabled: <TLS1.2, unsecure ciphers, autoindex, servertokens
+    * Security headers: HSTS, X-Frame, Referrer-Policy, Content-Type nosniff, X-Domain-Policy, XXS-Protection
+    * Limits to prevent DDoS
+    * Logging to syslog
+  * SSL modes
+    * local => Copy certificate files or use existing ones
+    * self-signed => Generate self-signed ones
+    * letsencrypt => _Use letsencrypt certbot (NOT YET IMPLEMENTED)_
+  * Default opt-ins:
+    * restricting methods to POST/GET
+
+
+## Info
+
+* **Note:** this role currently only supports debian-based systems
+
+
+* **Note:** Most of this functionality can be opted in or out using the main defaults file and variables!
+
+
+* **Note:** This role expects that the site's unencrypted 'server' will only redirect to its encrypted connection.
 
 
 ## Usage
 
-Just define the 'nginx' dictionary with all the keys you need.
-
-Currently, this role does not support the configuration of multiple sites in one run.
-
-For this you might need to loop its call.
+Just define the 'nginx' dictionary the sites you want to configure!
 
 All options can be found in the [main defaults file](https://github.com/ansibleguy/infra_nginx/blob/stable/defaults/main.yml)!
 
 ```yaml
 nginx:
-  mode: 'proxy'
-  domain: 'some.guy.net'
-  nginx_aliases:
-    - 'another.guy.net'
-  port_ssl: 8443
-  port_plain: 8080
-  proxy_port: 50000
+  config:
+    client_max_body_size: '500m'
+    ssl_session_timeout: '15m'
+  
+  sites:
+    some_proxy:
+      mode: 'proxy'
+      domain: 'some.guy.net'
+      aliases:
+        - 'service.guy.net'
+
+      port_ssl: 8443
+      port_plain: 8080
+      proxy:  # default proxy-target is localhost
+        port: 50000  # target port
+
+      ssl:
+        mode: 'local'  # pre-existing certificate
+        path_key: '/etc/nginx/ssl/some.guy.net.key'
+        path_pub: '/etc/nginx/ssl/some.guy.net.bundle.crt'  # public cert should be bundled with its ca-certificate
+
+    guys_statics:
+      mode: 'serve'
+      domain: 'static.guy.net'
+      serve:
+        path: '/var/www/static'
+
+      ssl:
+        mode: 'letsencrypt'  # not yet implemented..
+
+    git_stuff:
+      mode: 'redirect'
+      redirect:
+        target: 'https://github.com/ansibleguy'
+
 ```
+
+There are also some useful **tags** available:
+* base => only configure basics; sites will not be touched
+* sites
+* config
+* certs
