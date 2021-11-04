@@ -1,10 +1,10 @@
 ---
 
-- name: "Nginx | Debian | Site {{ name }} | Preparing certs"
+- name: "Nginx | Debian | Site '{{ name }}' | Preparing certs"
   ansible.builtin.include_tasks: prep_certs.yml
   tags: [certs, sites]
 
-- name: "Nginx | Debian | Remove Site {{ name }} | Removing config"
+- name: "Nginx | Debian | Remove Site '{{ name }}' | Removing config"
   ansible.builtin.file:
     path: "{{ item }}"
     state: absent
@@ -13,22 +13,17 @@
     - "/etc/nginx/sites-enabled/site_{{ name }}"
     - "/etc/nginx/sites-available/site_{{ name }}"
 
-- name: "Nginx | Debian | Remove Site {{ name }} | Removing local certificates"
+- name: "Nginx | Debian | Remove Site '{{ name }}' | Removing local certificates"
   ansible.builtin.file:
     path: "{{ item }}"
     state: absent
   loop:
-    - "{{ local_cert_pub }}"
-    - "{{ local_cert_key }}"
-  when: "site.ssl.mode in ['self-signed', 'local']"
+    - "{{ NGINX_CONFIG.ssl.path }}/{{ name }}.crt"
+    - "{{ NGINX_CONFIG.ssl.path }}/{{ name }}.key"
+    - "{{ NGINX_CONFIG.ssl.path }}/{{ name }}.csr"
+  when: "site.ssl.mode in ['selfsigned', 'existing', 'ca']"
 
-- name: "Nginx | Debian | Remove Site {{ name }} | Removing self-signed certificate csr"
-  ansible.builtin.file:
-    path: "{{ local_cert_csr }}"
-    state: absent
-  when: site.ssl.mode == 'self-signed'
-
-- name: "Nginx | Debian | Remove Site {{ name }} | Restarting nginx service"
+- name: "Nginx | Debian | Remove Site '{{ name }}' | Restarting nginx service"
   ansible.builtin.systemd:
     name: 'nginx.service'
     state: reloaded

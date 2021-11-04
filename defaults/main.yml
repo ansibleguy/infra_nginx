@@ -2,8 +2,8 @@
 
 # default config => is overwritten by provided config
 default_nginx:
-  user: 'nobody'
-  group: 'nogroup'
+  user: 'www-data'
+  group: 'www-data'
   sites: {}
 
   log:
@@ -39,10 +39,35 @@ default_nginx:
   letsencrypt:
     key_size: 4096
     path: '/etc/letsencrypt'
-    path_key: '/etc/ssl/private'
-    path_cert: '/etc/ssl/certs'
     renew_timer: 'Mon *-*-* 01:00:00'
     verbosity: 'v'
+    email:
+    renew: false  # if a renewal should be started by the role; the renewal service will auto-renew the certificates otherwise
+
+  ssl:
+    path: '/etc/nginx/ssl'
+    ca:
+      file:  # can be used if you want to use an existing ca
+      cn: 'Nginx CA Certificate'
+      org: 'AnsibleGuy'
+      ou:
+      country:
+      state:
+      locality:
+      email:
+      pwd:  # it's highly recommended setting a passphrase!
+
+  headers:
+    # if first key does not include 'header' => prepend 'add_header'
+    'Strict-Transport-Security': '"max-age=31536000; includeSubDomains" always'
+    'Referrer-Policy': 'same-origin'
+    'Content-Security-Policy': "\"default-src 'self'\""
+    'X-Frame-Options': 'DENY'
+    'X-Content-Type-Options': 'nosniff'
+    'X-Permitted-Cross-Domain-Policies': 'none'
+    'X-XSS-Protection': '"1; mode=block"'
+    'Set-Cookie': '"Path=/;HttpOnly;Secure;SameSite=none"'
+    # 'Permissions-Policy': ''
 
 NGINX_CONFIG: "{{ default_nginx | combine(nginx, recursive=true) }}"
 
@@ -51,7 +76,6 @@ default_site_config:
   mode: 'proxy'
   port_plain: 80
   port_ssl: 443
-  domain: '_'
   aliases: []
   ip:
   user: 'nobody'
@@ -70,6 +94,7 @@ default_site_config:
 
   proxy:
     ip: '127.0.0.1'
+    dns:  # proxy target ip will be ignored if dns is provided
     port: 8080
     proto: 'http'
     headers:
@@ -85,30 +110,40 @@ default_site_config:
     index: ['index.html']
 
   ssl:
-    mode: 'self-signed'  # local/selfsigned/letsencrypt
-    file_pub: '/etc/nginx/ssl/DOMAIN.crt'  # should use the certificate chain => top is server cert; bottom root cert
-    file_key: '/etc/nginx/ssl/DOMAIN.key'
-    file_csr: '/etc/nginx/ssl/DOMAIN.csr'
-    file_ca:
-    csr_data:
-      country: 'AT'
-      org: 'AnsibleGuy'
-      email: 'nginx@template.ansibleguy.net'
+    mode: 'selfsigned'  # existing/selfsigned/ca/letsencrypt
+    # existing:
+    #   We expect the certs to be placed in the role's 'files' directory named like the site
+    #   Example: files/certs/ansibleguy.key and files/certs/ansibleguy.crt
+    # letsencrypt:
+    #   Host needs to have a valid public dns record pointed at it
+    #   Needs to be publicly reachable over port 80/tcp
+    cert:
+      name:
       cn: 'Nginx Certificate'
+      org: 'AnsibleGuy'
+      ou:
+      country:
+      state:
+      locality:
+      email:
+      crl_distribution: []
+    ca:
+      file:  # can be used if you want to use an existing ca
+      cn:
+      org:
+      ou:
+      country:
+      state:
+      locality:
+      email:
+      pwd:  # it's highly recommended setting a passphrase!
 
-  headers:
-    # if first word does not include 'header' => prepend 'add_header'
-    'Strict-Transport-Security': '"max-age=31536000; includeSubDomains" always'
-    'Referrer-Policy': 'same-origin'
-    'Content-Security-Policy': "\"default-src 'self'\""
-    'X-Frame-Options': 'DENY'
-    'X-Content-Type-Options': 'nosniff'
-    'X-Permitted-Cross-Domain-Policies': 'none'
-    'X-XSS-Protection': '"1; mode=block"'
-    'Set-Cookie': '"Path=/;HttpOnly;Secure;SameSite=none"'
-    # 'Permissions-Policy': ''
+  letsencrypt:
+    key_size:
+    email:
+
+  headers: {}
 
 # packages
-nginx_packages: ['nginx']
 nginx_config_graylist: ['ssl_stapling', 'ssl_stapling_verify']
 nginx_restricted_methods: ['GET', 'POST', 'HEAD']

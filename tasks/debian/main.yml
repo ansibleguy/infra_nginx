@@ -2,18 +2,75 @@
 
 - name: Nginx | Debian | Installing nginx
   ansible.builtin.apt:
-    pkg: "{{ nginx_packages }}"
+    pkg: ['nginx']
+    state: present
+    update_cache: true
   tags: [base]
 
-- name: Nginx | Debian | Removing nginx site
-  ansible.builtin.include_tasks: rm_site.yml
+- name: Nginx | Debian | Creating service user
+  ansible.builtin.user:
+    name: "{{ NGINX_CONFIG.user }}"
+    shell: '/usr/sbin/nologin'
+    comment: 'Nginx Service User'
+
+- name: Nginx | Debian | Setting service user
+  ansible.builtin.lineinfile:
+    path: '/etc/nginx/nginx.conf'
+    regexp: '^user '
+    line: "user {{ NGINX_CONFIG.user }};"
+    validate: "nginx -t -c %s"
+  register: nginx_user_update_raw
+
+- name: Nginx | Debian | Restarting nginx
+  ansible.builtin.systemd:
+    name: 'nginx.service'
+    state: restarted
+  when: nginx_user_update_raw.changed
+
+# is an additional site-loop since certificates can be pre-/absent
+- name: Nginx | Debian |  Getting certificates using LetsEncrypt
+  ansible.builtin.include_role:
+    name: ansibleguy.infra_certs
+  when: site.ssl.mode == 'letsencrypt'
   vars:
     site: "{{ default_site_config | combine(site_item.value, recursive=true) }}"
     name: "{{ site_item.key | safe_key }}"
-  when: site_item.state != 'present'
+    certs:
+      mode: 'le_certbot'
+      path: "{{ NGINX_CONFIG.ssl.path }}"
+      owner_key: "{{ NGINX_CONFIG.user }}"
+      group_key: "{{ NGINX_CONFIG.group }}"
+      owner_cert: "{{ NGINX_CONFIG.user }}"
+      group_cert: "{{ NGINX_CONFIG.group }}"
+      letsencrypt:
+        certs: "{{ site | prepare_letsencrypt(name) }}"
+        path: "{{ NGINX_CONFIG.letsencrypt.path }}"
+        email: "{{ NGINX_CONFIG.letsencrypt.email }}"
+        renew_timer: "{{ NGINX_CONFIG.letsencrypt.renew_timer }}"
+        verbosity: "{{ NGINX_CONFIG.letsencrypt.verbosity }}"
+        service: 'nginx'
+        renew: "{{ NGINX_CONFIG.letsencrypt.renew }}"
   loop_control:
     loop_var: site_item
   with_dict: "{{ NGINX_CONFIG.sites }}"
+  no_log: true
+  tags: [certs]
+
+- name: Nginx | Debian | Removing default site
+  ansible.builtin.file:
+    path: '/etc/nginx/sites-enabled/default'
+    state: absent
+
+- name: Nginx | Debian | Removing site
+  ansible.builtin.include_tasks: rm_site.yml
+  when: site.state != 'present'
+  vars:
+    site: "{{ default_site_config | combine(site_item.value, recursive=true) }}"
+    name: "{{ site_item.key | safe_key }}"
+  loop_control:
+    loop_var: site_item
+  with_dict: "{{ NGINX_CONFIG.sites }}"
+  no_log: true
   tags: [config, sites, certs]
 
 - name: Nginx | Debian | Reloading nginx
@@ -22,15 +79,16 @@
     state: reloaded
   tags: [base, config, sites, certs]
 
-- name: Nginx | Debian | Adding nginx site
+- name: Nginx | Debian | Adding site
   ansible.builtin.include_tasks: add_site.yml
+  when: site.state == 'present'
   vars:
     site: "{{ default_site_config | combine(site_item.value, recursive=true) }}"
     name: "{{ site_item.key | safe_key }}"
-  when: site_item.state == 'present'
   loop_control:
     loop_var: site_item
   with_dict: "{{ NGINX_CONFIG.sites }}"
+  no_log: true
   tags: [config, sites, certs]
 
 - name: Nginx | Debian | Starting/Enabling nginx

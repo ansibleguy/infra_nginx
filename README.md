@@ -7,25 +7,35 @@ Role to configure a nginx webserver.
 
 ## Functionality
 
-* Package installation
+* **Package installation**
   * Ansible dependencies (_minimal_)
   * Nginx
-* Configuration
+
+
+* **Configuration**
   * Support for multiple sites/servers
-  * Three config-modes:
+  * Three **config-modes**:
     * proxy (_default_)
     * serve
     * redirect
-  * Default config:
+
+
+  * **Default config**:
     * Disabled: <TLS1.2, unsecure ciphers, autoindex, servertokens
     * Security headers: HSTS, X-Frame, Referrer-Policy, Content-Type nosniff, X-Domain-Policy, XXS-Protection
     * Limits to prevent DDoS
     * Logging to syslog
-  * SSL modes
-    * local => Copy certificate files or use existing ones
-    * self-signed => Generate self-signed ones
-    * letsencrypt => _Use letsencrypt certbot (NOT YET IMPLEMENTED)_
-  * Default opt-ins:
+    * Using a Self-Signed certificate
+
+
+  * **SSL modes** (_for more info see: [CERT ROLE](https://github.com/ansibleguy/infra_certs)_)
+    * **selfsigned** => Generate self-signed ones
+    * **ca** => Generate a minimal Certificate Authority and certificate signed by it
+    * **letsencrypt** => Uses the LetsEncrypt certbot
+    * **existing** => Copy certificate files or use existing ones
+
+
+  * **Default opt-ins**:
     * restricting methods to POST/GET/HEAD
 
 
@@ -40,19 +50,19 @@ Role to configure a nginx webserver.
 * **Note:** This role expects that the site's unencrypted 'server' will only redirect to its encrypted connection.
 
 
-* **Note:** If you want all domain-names to get 'catched' by a site/server you need to add an underline '_' as alias or domain!<br>
+* **Note:** If you want all domain-names to get 'caught' by a site/server you need to add an underline '_' as alias or domain!<br>
 This will also be done automatically if no domain is supplied.
 
 ## Requirements
 
-* Community collection: ```ansible-galaxy install -r requirements.yml```
+* Community collection and certificate role: ```ansible-galaxy install -r requirements.yml```
 
 
 ## Usage
 
-Just define the 'nginx' dictionary the sites you want to configure!
+### Config
 
-All options can be found in the [main defaults file](https://github.com/ansibleguy/infra_nginx/blob/stable/defaults/main.yml)!
+Define the nginx dictionary as needed!
 
 ```yaml
 nginx:
@@ -73,25 +83,28 @@ nginx:
         port: 50000  # target port
 
       ssl:
-        mode: 'local'  # pre-existing certificate
-        path_key: '/etc/nginx/ssl/some.guy.net.key'
-        path_pub: '/etc/nginx/ssl/some.guy.net.bundle.crt'  # public cert should be bundled with its ca-certificate
+        mode: 'existing'  # pre-existing certificates to be copied to the target server
 
     guys_statics:
       mode: 'serve'
       domain: 'static.guy.net'
       serve:
         path: '/var/www/static'
-
       ssl:
-        mode: 'letsencrypt'  # not yet implemented..
+        mode: 'ca'  # create minimal ca with signed server-certificate
 
     git_stuff:
       mode: 'redirect'
       redirect:
         target: 'https://github.com/ansibleguy'
+      ssl:
+        mode: 'letsencrypt'
+      letsencrypt:
+        email: 'nginx@template.ansibleguy.net'
 
 ```
+
+### Execution
 
 Run the playbook:
 ```bash
@@ -101,5 +114,5 @@ ansible-playbook -K -D -i inventory/hosts.yml playbook.yml
 There are also some useful **tags** available:
 * base => only configure basics; sites will not be touched
 * sites
-* config
+* config => only update site config (_excluding certificates_)
 * certs

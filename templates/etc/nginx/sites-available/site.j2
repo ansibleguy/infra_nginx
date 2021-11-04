@@ -1,3 +1,6 @@
+# {{ ansible_managed }}
+# ansibleguy.infra_nginx
+
 # http server
 server {
   listen {{ site.port_plain }};
@@ -62,15 +65,19 @@ server {
 {% endif %}
 
   # ssl config
-  ssl_certificate_key '{{ local_cert_key }}';
-  ssl_certificate     '{{ local_cert_pub }}';  # should use the certificate chain => top is server cert; bottom root cert
-{% if site.ssl.file_ca is none %}
-  ssl_stapling on;
-  ssl_stapling_verify on;
-{% else %}
+  ssl_certificate_key '{{ NGINX_CONFIG.ssl.path }}/{{ name }}.key';
+  ssl_certificate     '{{ NGINX_CONFIG.ssl.path }}/{{ name }}{% if site.ssl.mode == 'letsencrypt' %}.fullchain{% elif site.ssl.mode == 'ca' %}.chain{% endif %}.crt';  # should use the certificate chain => top is server cert; bottom root cert
+{% if site.ssl.ca.file is not none %}
   ssl_trusted_certificate {{ site.ssl.file_ca }};
   ssl_stapling off;
   ssl_stapling_verify off;
+{% elif site.ssl.mode == 'ca' %}
+  ssl_trusted_certificate '{{ NGINX_CONFIG.ssl.path }}/ca.crt';
+  ssl_stapling off;
+  ssl_stapling_verify off;
+{% else %}
+  ssl_stapling on;
+  ssl_stapling_verify on;
 {% endif %}
 
 {% if site.security.restrict_methods %}
@@ -83,7 +90,7 @@ server {
 {% if NGINX_CONFIG.config | length > 0 %}
   # global config
 {% for setting, value in NGINX_CONFIG.config.items() %}
-{%   if setting not in nginx_config_graylist %}
+{%   if setting not in nginx_config_graylist and setting not in site.config %}
   {{ setting }} {{ value }};
 {%   endif %}
 {% endfor %}
@@ -96,6 +103,19 @@ server {
   {{ setting }} {{ value }};
 {%   endif %}
 {% endfor %}
+{% endif %}
+
+{% if NGINX_CONFIG.headers | length > 0 %}
+  # global headers
+{%   for header, value in NGINX_CONFIG.headers.items() %}
+{%     if header not in site.headers %}
+{%       if 'header' in header %}
+  {{ header }} {{ value }};
+{%       else %}
+  add_header {{ header }} {{ value }};
+{%       endif %}
+{%     endif %}
+{%   endfor %}
 {% endif %}
 
 {% if site.headers | length > 0 %}
@@ -112,7 +132,7 @@ server {
   location / {
 {% if site.mode == 'proxy' %}
     # proxy-mode config
-    proxy_pass {{ site.proxy.proto }}://{{ site.proxy.ip }}:{{ site.proxy.port }};
+    proxy_pass {{ site.proxy.proto }}://{{ site.proxy.dns | default(site.proxy.ip, true) }}:{{ site.proxy.port }};
 
 {%   for option, value in site.proxy.headers.items() %}
     proxy_set_header {{ option }} {{ value }};
@@ -121,9 +141,9 @@ server {
 {% elif site.mode == 'redirect' %}
     # redirect-mode config
 {%   if site.redirect.request_uri %}
-    return 302 https://{{ site.redirect.target }}$request_uri;
+    return 302 {{ site.redirect.target }}$request_uri;
 {%   else %}
-    return 302 https://{{ site.redirect.target }};
+    return 302 {{ site.redirect.target }};
 {%   endif %}
 
 {% elif site.mode == 'serve' %}
