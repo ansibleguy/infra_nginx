@@ -53,6 +53,9 @@ Role to configure a nginx webserver.
 * **Note:** If you want all domain-names to get 'caught' by a site/server you need to add an underline '_' as alias or domain!<br>
 This will also be done automatically if no domain is supplied.
 
+
+* **Warning:** Not every setting/variable you provide will be checked for validity. Bad config might break the role!
+
 ## Requirements
 
 * Community collection and certificate role: ```ansible-galaxy install -r requirements.yml```
