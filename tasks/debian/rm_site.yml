@@ -1,9 +1,5 @@
 ---
 
-- name: "Nginx | Debian | Site '{{ name }}' | Preparing certs"
-  ansible.builtin.include_tasks: prep_certs.yml
-  tags: [certs, sites]
-
 - name: "Nginx | Debian | Remove Site '{{ name }}' | Removing config"
   ansible.builtin.file:
     path: "{{ item }}"
