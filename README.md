@@ -56,6 +56,12 @@ This will also be done automatically if no domain is supplied.
 
 * **Warning:** Not every setting/variable you provide will be checked for validity. Bad config might break the role!
 
+
+* **Warning:** If you run a web application you might need to disable the 'Content-Security-Policy' header!
+
+
+* **Info:** To disable default settings and headers => just set their value to: ''
+
 ## Requirements
 
 * Community collection and certificate role: ```ansible-galaxy install -r requirements.yml```

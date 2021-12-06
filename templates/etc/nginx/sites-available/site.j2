@@ -24,10 +24,12 @@ server {
 {% if site.headers | length > 0 %}
   # site-specific headers
 {%   for header, value in site.headers.items() %}
-{%     if 'header' in header %}
+{%     if value not in NONE_VALUES %}
+{%       if 'header' in header %}
   {{ header }} {{ value }};
-{%     else %}
+{%       else %}
   add_header {{ header }} {{ value }};
+{%       endif %}
 {%     endif %}
 {%   endfor %}
 {% endif %}
@@ -90,7 +92,7 @@ server {
 {% if NGINX_CONFIG.config | length > 0 %}
   # global config
 {% for setting, value in NGINX_CONFIG.config.items() %}
-{%   if setting not in nginx_config_graylist and setting not in site.config %}
+{%   if setting not in nginx_config_graylist and setting not in site.config and value not in NONE_VALUES %}
   {{ setting }} {{ value }};
 {%   endif %}
 {% endfor %}
@@ -99,7 +101,7 @@ server {
 {% if site.config | length > 0 %}
   # site-specific config
 {% for setting, value in site.config.items() %}
-{%   if setting not in nginx_config_graylist %}
+{%   if setting not in nginx_config_graylist and value not in NONE_VALUES %}
   {{ setting }} {{ value }};
 {%   endif %}
 {% endfor %}
@@ -108,7 +110,7 @@ server {
 {% if NGINX_CONFIG.headers | length > 0 %}
   # global headers
 {%   for header, value in NGINX_CONFIG.headers.items() %}
-{%     if header not in site.headers %}
+{%     if header not in site.headers and value not in NONE_VALUES %}
 {%       if 'header' in header %}
   {{ header }} {{ value }};
 {%       else %}
@@ -121,10 +123,12 @@ server {
 {% if site.headers | length > 0 %}
   # site-specific headers
 {%   for header, value in site.headers.items() %}
-{%     if 'header' in header %}
+{%     if value not in NONE_VALUES %}
+{%       if 'header' in header %}
   {{ header }} {{ value }};
-{%     else %}
+{%       else %}
   add_header {{ header }} {{ value }};
+{%       endif %}
 {%     endif %}
 {%   endfor %}
 {% endif %}
@@ -135,7 +139,9 @@ server {
     proxy_pass {{ site.proxy.proto }}://{{ site.proxy.dns | default(site.proxy.ip, true) }}:{{ site.proxy.port }};
 
 {%   for option, value in site.proxy.headers.items() %}
+{%     if value not in NONE_VALUES %}
     proxy_set_header {{ option }} {{ value }};
+{%     endif %}
 {%   endfor %}
 
 {% elif site.mode == 'redirect' %}
