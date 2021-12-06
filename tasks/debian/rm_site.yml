@@ -22,5 +22,5 @@
 - name: "Nginx | Debian | Remove Site '{{ name }}' | Restarting nginx service"
   ansible.builtin.systemd:
     name: 'nginx.service'
-    state: reloaded
+    state: restarted
   when: site_config.changed

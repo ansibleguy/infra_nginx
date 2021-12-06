@@ -98,8 +98,8 @@
     state: started
   tags: [base]
 
-- name: Nginx | Debian | Reloading nginx
+- name: Nginx | Debian | Restarting nginx  # reload will not enable all config changes.. we could check for changes in the future
   ansible.builtin.systemd:
     name: 'nginx.service'
-    state: reloaded
+    state: restarted
   tags: [base, config, sites, certs]
