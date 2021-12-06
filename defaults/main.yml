@@ -12,8 +12,8 @@ default_nginx:
     syslog: true
     syslog_host:
     syslog_port: 514
-    prefix_ue: 'nginx_plain_'
-    prefix_ssl: 'nginx_ssl_'
+    prefix_ue: 'nginx_'  # log prefix for http site
+    prefix_ssl: 'nginx_'  # log prefix for ssl site
 
   config:
     autoindex: 'off'
