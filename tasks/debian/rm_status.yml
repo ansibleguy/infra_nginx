@@ -1,0 +1,10 @@
+---
+
+- name: Nginx | Debian | Removing status page
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  register: site_config
+  loop:
+    - '/etc/nginx/sites-enabled/status'
+    - '/etc/nginx/sites-available/status'

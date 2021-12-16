@@ -61,6 +61,11 @@
     path: '/etc/nginx/sites-enabled/default'
     state: absent
 
+- name: Nginx | Debian | Removing status page
+  ansible.builtin.include_tasks: rm_status.yml
+  when: NGINX_CONFIG.status_page.state != 'present'
+  tags: [base, config, sites]
+
 - name: Nginx | Debian | Removing site
   ansible.builtin.include_tasks: rm_site.yml
   when: site.state != 'present'
@@ -78,6 +83,11 @@
     name: 'nginx.service'
     state: reloaded
   tags: [base, config, sites, certs]
+
+- name: Nginx | Debian | Adding status page
+  ansible.builtin.include_tasks: add_status.yml
+  when: NGINX_CONFIG.status_page.state == 'present'
+  tags: [base, config, sites]
 
 - name: Nginx | Debian | Adding site
   ansible.builtin.include_tasks: add_site.yml

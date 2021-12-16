@@ -1,0 +1,33 @@
+# {{ ansible_managed }}
+# ansibleguy.infra_nginx
+
+server {
+  listen {{ NGINX_CONFIG.status_page.bind }}:{{ NGINX_CONFIG.status_page.port }};
+
+  # log config
+{% if NGINX_CONFIG.log.syslog and NGINX_CONFIG.log.syslog_host is not none %}
+  access_log syslog:server={{ NGINX_CONFIG.log.syslog_host }},tag={{ NGINX_CONFIG.log.prefix_ue }}nginx_status,nohostname,severity=info combined;
+  error_log  syslog:server={{ NGINX_CONFIG.log.syslog_host }},tag={{ NGINX_CONFIG.log.prefix_ue }}nginx_status,nohostname,severity=error;
+{% elif NGINX_CONFIG.log.syslog %}
+  access_log syslog:server=unix:/dev/log,tag={{ NGINX_CONFIG.log.prefix_ue }}nginx_status,nohostname,severity=info combined;
+  error_log  syslog:server=unix:/dev/log,tag={{ NGINX_CONFIG.log.prefix_ue }}nginx_status,nohostname,severity=error;
+{% elif NGINX_CONFIG.log.per_site %}
+  error_log {{ NGINX_CONFIG.log.path }}/nginx_status_error.log;
+  access_log {{ NGINX_CONFIG.log.path }}/nginx_status_access.log;
+{% else %}
+  error_log {{ NGINX_CONFIG.log.path }}/error.log;
+  access_log {{ NGINX_CONFIG.log.path }}/access.log;
+{% endif %}
+
+  # status page handling
+  location = /{{ NGINX_CONFIG.status_page.path }} {
+    stub_status;
+{% if NGINX_CONFIG.status_page.allow | length > 0 %}
+{%   for allow in NGINX_CONFIG.status_page.allow %}
+    allow {{ allow }};
+{%   endfor %}
+
+    deny all;
+{% endif %}
+  }
+}

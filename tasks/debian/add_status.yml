@@ -1,0 +1,14 @@
+---
+
+- name: Nginx | Debian | Status page | Adding site config
+  ansible.builtin.template:
+    src: 'templates/etc/nginx/sites-available/status.j2'
+    dest: '/etc/nginx/sites-available/status'
+  tags: [config, sites, base]
+
+- name: Nginx | Debian | Status page | Enabling site config
+  ansible.builtin.file:
+    src: '/etc/nginx/sites-available/status'
+    dest: '/etc/nginx/sites-enabled/status'
+    state: link
+  tags: [config, sites, base]
