@@ -1,6 +1,6 @@
 # Ansible Nginx Role
 
-Role to configure a nginx webserver.
+Ansible Role to deploy one or multiple NGINX sites on a linux server.
 
 **Tested:**
 * Debian 11
