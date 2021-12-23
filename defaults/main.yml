@@ -68,7 +68,7 @@ default_nginx:
     # if first key does not include 'header' => prepend 'add_header'
     'Strict-Transport-Security': '"max-age=31536000; includeSubDomains" always'
     'Referrer-Policy': 'same-origin'
-    'Content-Security-Policy': "\"default-src 'self'\""
+    # 'Content-Security-Policy': "\"default-src 'self'\""  # disabled since it blocks too many common use-cases
     'X-Frame-Options': 'DENY'
     'X-Content-Type-Options': 'nosniff'
     'X-Permitted-Cross-Domain-Policies': 'none'
@@ -87,6 +87,7 @@ default_site_config:
   ip:
   user: 'nobody'
   group: 'nobody'
+  http_version: 2
 
   config: {}  # site-specific setting-value pairs
   config_additions: []  # lines that will 1-to-1 be appended to the site-config (directory config etc.)

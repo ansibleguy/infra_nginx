@@ -3,7 +3,7 @@
 
 # http server
 server {
-  listen {{ site.port_plain }};
+  listen {{ site.port_plain }} {% if site.http_version | int == 2 %}http2{% elif site.http_version | int == 3 %}http3{% endif %};
   server_name {{ site.domain }}{% for alias in site.aliases %} {{ alias }}{% endfor %}{% if site.ip is not none %} {{ site.ip }}{% endif %};
 
   # log config
@@ -48,7 +48,7 @@ server {
 
 # https server
 server {
-  listen {{ site.port_ssl }} ssl;
+  listen {{ site.port_ssl }} ssl {% if site.http_version | int == 2 %}http2{% elif site.http_version | int == 3 %}http3{% endif %};
   server_name {{ site.domain }}{% for alias in site.aliases %} {{ alias }}{% endfor %}{% if site.ip is not none %} {{ site.ip }}{% endif %};
 
   # log config
