@@ -3,7 +3,7 @@
 
 # http server
 server {
-  listen {{ site.port_plain }} {% if site.http_version | int == 2 %}http2{% elif site.http_version | int == 3 %}http3{% endif %};
+  listen {{ site.port_plain }};
   server_name {{ site.domain }}{% for alias in site.aliases %} {{ alias }}{% endfor %}{% if site.ip is not none %} {{ site.ip }}{% endif %};
 
   # log config
