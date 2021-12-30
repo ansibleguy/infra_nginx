@@ -7,7 +7,7 @@ galaxy_info:
   repository: 'https://github.com/ansibleguy/infra_nginx'
   issue_tracker_url: 'https://github.com/ansibleguy/infra_nginx/issues'
   github_branch: 'stable'
-  min_ansible_version: 2.9.0
+  min_ansible_version: 2.9.10
   description: 'Role to configure a nginx webserver in one of three basic config modes: proxy, redirect, serve'
   platforms:
     - name: Debian
