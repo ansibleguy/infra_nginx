@@ -1,52 +1,54 @@
 # {{ ansible_managed }}
 # ansibleguy.infra_nginx
 
-# http server
+{% if site.plain_site %}
+# http listener
 server {
   listen {{ site.port_plain }};
   server_name {{ site.domain }}{% for alias in site.aliases %} {{ alias }}{% endfor %}{% if site.ip is not none %} {{ site.ip }}{% endif %};
 
   # log config
-{% if NGINX_CONFIG.log.syslog and NGINX_CONFIG.log.syslog_host is not none %}
+{%   if NGINX_CONFIG.log.syslog and NGINX_CONFIG.log.syslog_host is not none %}
   access_log syslog:server={{ NGINX_CONFIG.log.syslog_host }},tag={{ NGINX_CONFIG.log.prefix_ue }}{{ name }},nohostname,severity=info combined;
   error_log  syslog:server={{ NGINX_CONFIG.log.syslog_host }},tag={{ NGINX_CONFIG.log.prefix_ue }}{{ name }},nohostname,severity=error;
-{% elif NGINX_CONFIG.log.syslog %}
+{%   elif NGINX_CONFIG.log.syslog %}
   access_log syslog:server=unix:/dev/log,tag={{ NGINX_CONFIG.log.prefix_ue }}{{ name }},nohostname,severity=info combined;
   error_log  syslog:server=unix:/dev/log,tag={{ NGINX_CONFIG.log.prefix_ue }}{{ name }},nohostname,severity=error;
-{% elif NGINX_CONFIG.log.per_site %}
+{%   elif NGINX_CONFIG.log.per_site %}
   error_log {{ NGINX_CONFIG.log.path }}/{{ name }}_error.log;
   access_log {{ NGINX_CONFIG.log.path }}/{{ name }}_access.log;
-{% else %}
+{%   else %}
   error_log {{ NGINX_CONFIG.log.path }}/error.log;
   access_log {{ NGINX_CONFIG.log.path }}/access.log;
-{% endif %}
+{%   endif %}
 
-{% if site.headers | length > 0 %}
+{%   if site.headers | length > 0 %}
   # site-specific headers
-{%   for header, value in site.headers.items() %}
-{%     if value not in NONE_VALUES %}
-{%       if 'header' in header %}
+{%     for header, value in site.headers.items() %}
+{%       if value not in NONE_VALUES %}
+{%         if 'header' in header %}
   {{ header }} {{ value }};
-{%       else %}
+{%         else %}
   add_header {{ header }} {{ value }};
+{%         endif %}
 {%       endif %}
-{%     endif %}
-{%   endfor %}
-{% endif %}
+{%     endfor %}
+{%   endif %}
 
-{% if site.security.restrict_methods %}
+{%   if site.security.restrict_methods %}
   # security config
   if ($request_method !~ ^({{ nginx_restricted_methods | join('|') }})$ ) {
     return 405;
   }
-{% endif %}
+{%   endif %}
 
   # redirect all to secure connection
   return 301 https://{{ site.domain }}$request_uri;
 
 }
+{% endif %}
 
-# https server
+# https listener
 server {
   listen {{ site.port_ssl }} ssl {% if site.http_version | int == 2 %}http2{% elif site.http_version | int == 3 %}http3{% endif %};
   server_name {{ site.domain }}{% for alias in site.aliases %} {{ alias }}{% endfor %}{% if site.ip is not none %} {{ site.ip }}{% endif %};
