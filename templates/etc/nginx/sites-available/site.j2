@@ -1,6 +1,10 @@
 # {{ ansible_managed }}
 # ansibleguy.infra_nginx
 
+{% if site.proxy.cache.enable %}
+proxy_cache_path {{ site.proxy.cache.path }}/site_{{ name }} levels={{ site.proxy.cache.levels }} keys_zone={{ name }}_cache:{{ site.proxy.cache.memory }} max_size={{ site.proxy.cache.max_size }} inactive={{ site.proxy.cache.inactive }} use_temp_path={{ site.proxy.cache.use_temp_path }};
+{% endif %}
+
 {% if site.plain_site %}
 # http listener
 server {
@@ -145,6 +149,13 @@ server {
     proxy_set_header {{ option }} {{ value }};
 {%     endif %}
 {%   endfor %}
+
+{%   if site.proxy.cache.enable %}
+    proxy_cache {{ name }}_cache;
+{%     for setting, value in site.proxy.cache.settings.items() %}
+    proxy_cache_{{ setting }} {{ value }};
+{%     endfor %}
+{%   endif %}
 
 {% elif site.mode == 'redirect' %}
     # redirect-mode config

@@ -11,6 +11,13 @@
   when: "site.ssl.mode in ['selfsigned', 'existing', 'ca']"
   tags: [certs, sites]
 
+- name: "Nginx | Debian | Site '{{ name }}' | Adding cache directory"
+  ansible.builtin.file:
+    path: "{{ site.proxy.cache.path }}/site_{{ name }}"
+    state: directory
+    mode: 0755
+  when: site.proxy.cache.enable
+
 - name: "Nginx | Debian | Site '{{ name }}' | Adding site config"
   ansible.builtin.template:
     src: 'templates/etc/nginx/sites-available/site.j2'

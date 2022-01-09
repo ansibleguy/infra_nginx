@@ -39,6 +39,8 @@ Ansible Role to deploy one or multiple NGINX sites on a linux server.
   * **Default opt-ins**:
     * restricting methods to POST/GET/HEAD
 
+  * **Default opt-outs**:
+    * proxy-mode caching
 
 ## Info
 
@@ -88,6 +90,9 @@ nginx:
       port_plain: 8080
       proxy:  # default proxy-target is localhost
         port: 50000  # target port
+        
+        cache:  # upstream content-caching
+          enable: true
 
       ssl:
         mode: 'existing'  # pre-existing certificates to be copied to the target server

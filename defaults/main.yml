@@ -1,6 +1,6 @@
 ---
 
-# todo: add proxy_cache https://docs.nginx.com/nginx/admin-guide/content-cache/content-caching/
+# see for valid units: https://nginx.org/en/docs/syntax.html
 
 # default config => is overwritten by provided config
 default_nginx:
@@ -90,7 +90,7 @@ default_site_config:
   user: 'nobody'
   group: 'nobody'
   http_version: 2
-  site_plain: true  # if http site (only used for redirect to https) should be created
+  plain_site: true  # if http site (only used for redirect to https) should be created
 
   config: {}  # site-specific setting-value pairs
   config_additions: []  # lines that will 1-to-1 be appended to the site-config (directory config etc.)
@@ -115,6 +115,20 @@ default_site_config:
       X-Forwarded-For: '$proxy_add_x_forwarded_for'
       X-Forwarded-Proto: '$scheme'
       X-Real-IP: '$remote_addr'
+    cache:  # see: https://www.nginx.com/blog/nginx-caching-guide/
+      enable: false
+      path: '/var/cache/nginx'
+      max_size: '512m'
+      memory: '10m'
+      inactive: '1d'
+      levels: '1:2'
+      use_temp_path: 'off'
+      settings:
+        revalidate: 'on'
+        # min_uses: '3'
+        use_stale: 'error timeout updating http_500 http_502 http_503 http_504'
+        background_update: 'on'
+        lock: 'on'
 
   serve:
     path: '/var/www/html'
