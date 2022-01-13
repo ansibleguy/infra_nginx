@@ -47,7 +47,12 @@ server {
 {%   endif %}
 
   # redirect all to secure connection
+{% if site.plain_redirect == 'preserve_domain' %}
+  return 301 https://$host$request_uri;
+{% else %}
   return 301 https://{{ site.domain }}$request_uri;
+{% endif %}
+
 
 }
 {% endif %}
