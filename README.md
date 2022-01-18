@@ -27,6 +27,7 @@ Ansible Role to deploy one or multiple NGINX sites on a linux server.
     * Logging to syslog
     * Using a Self-Signed certificate
     * HTTP2 enabled with fallback to HTTP1.1
+    * IPv6 support enabled
 
 
   * **SSL modes** (_for more info see: [CERT ROLE](https://github.com/ansibleguy/infra_certs)_)

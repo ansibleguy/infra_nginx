@@ -8,6 +8,8 @@ default_nginx:
   group: 'www-data'
   sites: {}
 
+  ipv6: true
+
   status_page:
     state: 'present'
     bind: '127.0.0.1'
@@ -85,6 +87,8 @@ default_site_config:
   mode: 'proxy'
   port_plain: 80
   port_ssl: 443
+  listen: ''  # default = all
+  listen_ipv6: '[::]'  # default = all
   aliases: []
   ip:
   user: 'nobody'

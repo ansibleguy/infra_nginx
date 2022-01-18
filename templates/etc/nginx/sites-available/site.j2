@@ -8,7 +8,10 @@ proxy_cache_path {{ site.proxy.cache.path }}/site_{{ name }} levels={{ site.prox
 {% if site.plain_site %}
 # http listener
 server {
-  listen {{ site.port_plain }};
+  listen {% if site.listen != '' %}{{ site.listen }}:{% endif %}{{ site.port_plain }};
+{% if NGINX_CONFIG.ipv6 and site.listen_ipv6 != '' %}
+  listen {{ site.listen_ipv6 }}:{{ site.port_plain }};
+{% endif %}
   server_name {{ site.domain }}{% for alias in site.aliases %} {{ alias }}{% endfor %}{% if site.ip is not none %} {{ site.ip }}{% endif %};
 
   # log config
@@ -59,7 +62,10 @@ server {
 
 # https listener
 server {
-  listen {{ site.port_ssl }} ssl {% if site.http_version | int == 2 %}http2{% elif site.http_version | int == 3 %}http3{% endif %};
+  listen {% if site.listen != '' %}{{ site.listen }}:{% endif %}{{ site.port_ssl }} ssl {% if site.http_version | int == 2 %}http2{% elif site.http_version | int == 3 %}http3{% endif %};
+{% if NGINX_CONFIG.ipv6 and site.listen_ipv6 != '' %}
+  listen {{ site.listen_ipv6 }}:{{ site.port_ssl }} ssl {% if site.http_version | int == 2 %}http2{% elif site.http_version | int == 3 %}http3{% endif %};
+{% endif %}
   server_name {{ site.domain }}{% for alias in site.aliases %} {{ alias }}{% endfor %}{% if site.ip is not none %} {{ site.ip }}{% endif %};
 
   # log config
