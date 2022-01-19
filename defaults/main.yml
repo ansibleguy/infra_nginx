@@ -106,7 +106,7 @@ default_site_config:
 
   redirect:
     target: 'https://github.com/ansibleguy'
-    request_uri: true
+    request_uri: false  # forward the path the client tried to open
 
   proxy:
     ip: '127.0.0.1'

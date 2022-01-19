@@ -18,13 +18,13 @@ Ansible Role to deploy one or multiple NGINX sites on a linux server.
     * proxy (_default_)
     * serve
     * redirect
+  * Support for specific configurations using the 'config' and 'config_additions' parameters
 
 
   * **Default config**:
     * Disabled: <TLS1.2, unsecure ciphers, autoindex, servertokens
     * Security headers: HSTS, X-Frame, Referrer-Policy, Content-Type nosniff, X-Domain-Policy, XXS-Protection
     * Limits to prevent DDoS
-    * Logging to syslog
     * Using a Self-Signed certificate
     * HTTP2 enabled with fallback to HTTP1.1
     * IPv6 support enabled
@@ -39,6 +39,10 @@ Ansible Role to deploy one or multiple NGINX sites on a linux server.
 
   * **Default opt-ins**:
     * restricting methods to POST/GET/HEAD
+    * status-page listener on localhost
+    * Logging to syslog
+    * http2
+
 
   * **Default opt-outs**:
     * proxy-mode caching
@@ -103,17 +107,27 @@ nginx:
       domain: 'static.guy.net'
       serve:
         path: '/var/www/static'
+
       ssl:
         mode: 'ca'  # create minimal ca with signed server-certificate
+      
+      config:  # add settings as key-value pairs
+        LimitRequestFields: 10
+      config_additions:  # add a list of custom lines of config
+        - 'location = /favicon.ico {alias /var/not_www/site_guys_statics/favicon.ico;}'
 
     git_stuff:
       mode: 'redirect'
       redirect:
         target: 'https://github.com/ansibleguy'
+
       ssl:
         mode: 'letsencrypt'
       letsencrypt:
         email: 'nginx@template.ansibleguy.net'
+
+      security:
+        restrict_methods: false
 
 ```
 
