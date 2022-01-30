@@ -1,6 +1,6 @@
 [![Nginx](https://nginx.org/nginx.png)](https://nginx.org)
 
-# Ansible Nginx Role
+# Ansible Role - Nginx Webserver
 
 Ansible Role to deploy one or multiple NGINX sites on a linux server.
 
