@@ -53,7 +53,7 @@ server {
 {% if site.plain_redirect == 'preserve_domain' %}
   return 301 https://$host$request_uri;
 {% else %}
-  return 301 https://{{ site.domain }}$request_uri;
+  return 301 https://$server_name$request_uri;
 {% endif %}
 
 
@@ -67,6 +67,12 @@ server {
   listen {{ site.listen_ipv6 }}:{{ site.port_ssl }} ssl {% if site.http_version | int == 2 %}http2{% elif site.http_version | int == 3 %}http3{% endif %};
 {% endif %}
   server_name {{ site.domain }}{% for alias in site.aliases %} {{ alias }}{% endfor %}{% if site.ip is not none %} {{ site.ip }}{% endif %};
+
+{% if site.main_redirect %}
+  if ($host != $server_name) {
+    rewrite ^/(.*) $scheme://$server_name/$1 permanent;
+  }
+{% endif %}
 
   # log config
 {% if NGINX_CONFIG.log.syslog and NGINX_CONFIG.log.syslog_host is not none %}

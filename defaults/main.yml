@@ -43,8 +43,8 @@ default_nginx:
     ssl_session_timeout: '10m'
     client_body_timeout: '5s'
     ssl_protocols: 'TLSv1.2 TLSv1.3'
-    ssl_prefer_server_ciphers: 'off'
-    ssl_ciphers: 'ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-SHA384:ECDHE-RSA-AES128-SHA256:ECDHE-RSA-AES256-SHA:ECDHE-RSA-AES128-SHA:DHE-RSA-AES256-SHA256:DHE-RSA-AES128-SHA256:DHE-RSA-AES256-SHA:DHE-RSA-AES128-SHA:ECDHE-RSA-DES-CBC3-SHA:EDH-RSA-DES-CBC3-SHA:AES256-GCM-SHA384:AES128-GCM-SHA256:AES256-SHA256:AES128-SHA256:AES256-SHA:AES128-SHA:DES-CBC3-SHA:HIGH:!aNULL:!eNULL:!EXPORT:!DES:!MD5:!PSK:!RC4'
+    ssl_prefer_server_ciphers: 'on'
+    ssl_ciphers: 'EECDH+ECDSA+AESGCM:EECDH+aRSA+AESGCM:!aNULL:!eNULL:!LOW:!3DES:!MD5:!EXP:!PSK:!SRP:!DSS:!RC4'  # will fail connection to old browsers (ie11,safari<9)
     # limit_conn: 'conns 100'  # zero size shared memory zone
 
   letsencrypt:
@@ -96,6 +96,7 @@ default_site_config:
   http_version: 2
   plain_site: true  # if http site (only used for redirect to https) should be created
   plain_redirect: 'preserve_domain'  # keep hostname from plain request => any other value will set the redirect to the main-domain
+  main_redirect: false  # redirect all requests to the primary site-domain
 
   config: {}  # site-specific setting-value pairs
   config_additions: []  # lines that will 1-to-1 be appended to the site-config (directory config etc.)
