@@ -44,7 +44,8 @@ default_nginx:
     client_body_timeout: '5s'
     ssl_protocols: 'TLSv1.2 TLSv1.3'
     ssl_prefer_server_ciphers: 'on'
-    ssl_ciphers: 'EECDH+ECDSA+AESGCM:EECDH+aRSA+AESGCM:!aNULL:!eNULL:!LOW:!3DES:!MD5:!EXP:!PSK:!SRP:!DSS:!RC4'  # will fail connection to old browsers (ie11,safari<9)
+    ssl_ciphers: 'EECDH+ECDSA+AESGCM:EECDH+aRSA+AESGCM:!aNULL:!eNULL:!LOW:!3DES:!MD5:!EXP:!PSK:!SRP:!DSS:!RC4'
+    # will fail connection to old browsers (ie11,safari<9)
     # limit_conn: 'conns 100'  # zero size shared memory zone
 
   letsencrypt:
