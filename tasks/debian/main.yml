@@ -2,7 +2,7 @@
 
 - name: Nginx | Debian | Installing nginx
   ansible.builtin.apt:
-    pkg: ['nginx']
+    pkg: "{{ NGINX_HC.packages }}"
     state: present
     update_cache: true
   tags: [base]

@@ -176,7 +176,8 @@ default_site_config:
 
   headers: {}
 
-# packages
+NGINX_HC:
+  packages: ['systemd', 'nginx']
 nginx_config_graylist: ['ssl_stapling', 'ssl_stapling_verify']
 nginx_restricted_methods: ['GET', 'POST', 'HEAD']
 NONE_VALUES: [none, '', ' ']
