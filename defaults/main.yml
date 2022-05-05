@@ -2,6 +2,8 @@
 
 # see for valid units: https://nginx.org/en/docs/syntax.html
 
+# todo: hide nginx version
+
 # default config => is overwritten by provided config
 default_nginx:
   user: 'www-data'
