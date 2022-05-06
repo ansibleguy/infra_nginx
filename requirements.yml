@@ -7,6 +7,4 @@ collections:
     source: 'https://galaxy.ansible.com'
 
 roles:
-  - src: 'https://github.com/ansibleguy/infra_certs.git'
-    version: 'stable'
-    name: 'ansibleguy.infra_certs'
+  - src: 'ansibleguy.infra_certs'
