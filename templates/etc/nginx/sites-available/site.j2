@@ -100,6 +100,9 @@ server {
   ssl_trusted_certificate '{{ NGINX_CONFIG.ssl.path }}/ca.crt';
   ssl_stapling off;
   ssl_stapling_verify off;
+{% elif site.ssl.mode == 'selfsigned' %}
+  ssl_stapling off;
+  ssl_stapling_verify off;
 {% else %}
   ssl_stapling on;
   ssl_stapling_verify on;
