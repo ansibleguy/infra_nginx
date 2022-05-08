@@ -28,7 +28,7 @@
   when: nginx_user_update_raw.changed
 
 # is an additional site-loop since certificates can be pre-/absent
-- name: Nginx | Debian |  Getting certificates using LetsEncrypt
+- name: Nginx | Debian | Getting certificates using LetsEncrypt
   ansible.builtin.include_role:
     name: ansibleguy.infra_certs
   when: site.ssl.mode == 'letsencrypt'
@@ -50,6 +50,7 @@
         verbosity: "{{ NGINX_CONFIG.letsencrypt.verbosity }}"
         service: 'nginx'
         renew: "{{ NGINX_CONFIG.letsencrypt.renew }}"
+        state: "{{ site_item.value.state }}"
   loop_control:
     loop_var: site_item
   with_dict: "{{ NGINX_CONFIG.sites }}"
