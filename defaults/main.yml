@@ -15,7 +15,7 @@ default_nginx:
   status_page:
     state: 'present'
     bind: '127.0.0.1'
-    port: 80
+    port: 8888
     path: 'basic_status'
     allow: []
 
@@ -144,7 +144,7 @@ default_site_config:
     index: ['index.html']
 
   ssl:
-    mode: 'selfsigned'  # existing/selfsigned/ca/letsencrypt
+    mode: 'ca'  # existing/selfsigned/ca/letsencrypt
     # existing:
     #   We expect the certs to be placed in the role's 'files' directory named like the site
     #   Example: files/certs/ansibleguy.key and files/certs/ansibleguy.crt
