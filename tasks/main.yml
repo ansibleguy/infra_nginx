@@ -1,13 +1,11 @@
 ---
 
 - name: Nginx | Checking config
-  ansible.builtin.fail:
-    msg: "The required configuration was not provided!
-    Needed: 'nginx', 'nginx.sites'"
-  when: >
-    nginx is undefined or
-    nginx.sites is undefined or
-    nginx.sites | length == 0
+  ansible.builtin.assert:
+    that:
+      - nginx is defined
+      - nginx.sites is defined
+      - nginx.sites | length > 0
 
 - name: Nginx | Processing debian config
   ansible.builtin.import_tasks: debian/main.yml

@@ -1,10 +1,9 @@
 ---
 
 - name: "Nginx | Debian | Site '{{ name }}' | Checking config"
-  ansible.builtin.fail:
-    msg: "The required site-configuration was not provided!
-    Needed: 'domain'"
-  when: site.domain is undefined
+  ansible.builtin.assert:
+    that:
+      - site.domain is defined
 
 - name: "Nginx | Debian | Site '{{ name }}' | Processing local certs"
   ansible.builtin.import_tasks: add_certs.yml
