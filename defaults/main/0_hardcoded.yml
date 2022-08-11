@@ -1,0 +1,14 @@
+---
+
+NGINX_HC:
+  packages: ['systemd', 'nginx']
+  main_config:  # /etc/nginx/nginx.conf
+    - search: "^user "
+      replace: "user {{ NGINX_CONFIG.user }};"
+    - search: "(\\s*)include \/etc\/nginx\/sites-enabled"
+      replace: "\\1include /etc/nginx/sites-enabled/*;"
+      after: 'http {'
+  config_graylist: ['ssl_stapling', 'ssl_stapling_verify']
+  restricted_methods: ['GET', 'POST', 'HEAD']
+
+NONE_VALUES: [none, '', ' ']

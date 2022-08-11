@@ -1,0 +1,94 @@
+---
+
+defaults_site:
+  state: 'present'
+  mode: 'proxy'
+  port_plain: 80
+  port_ssl: 443
+  listen: ''  # default = all
+  listen_ipv6: '[::]'  # default = all
+  aliases: []
+  ip:
+  user: 'nobody'
+  group: 'nobody'
+  http_version: 2
+  plain_site: true  # if http site (only used for redirect to https) should be created
+  plain_redirect: 'preserve_domain'  # keep hostname from plain request => any other value will set the redirect to the main-domain
+  main_redirect: false  # redirect all requests to the primary site-domain
+
+  config: {}  # site-specific setting-value pairs
+  config_additions: []  # lines that will 1-to-1 be appended to the site-config (directory config etc.)
+  # BE AWARE that you might break the config-syntax if you're not careful
+
+  security:
+    restrict_methods: true  # disable anything but GET/POST/HEAD methods; if you're running a web-application you might need to disable this filter
+
+  redirect:
+    target: 'https://github.com/ansibleguy'
+    request_uri: false  # forward the path the client tried to open
+
+  proxy:
+    ip: '127.0.0.1'
+    dns:  # proxy target ip will be ignored if dns is provided
+    port: 8080
+    proto: 'http'
+    headers:
+      Host: '$http_host'
+      X-Forwarded-Host: '$host'
+      X-Forwarded-Server: '$host'
+      X-Forwarded-For: '$proxy_add_x_forwarded_for'
+      X-Forwarded-Proto: '$scheme'
+      X-Real-IP: '$remote_addr'
+    cache:  # see: https://www.nginx.com/blog/nginx-caching-guide/
+      enable: false
+      path: '/var/cache/nginx'
+      max_size: '512m'
+      memory: '10m'
+      inactive: '1d'
+      levels: '1:2'
+      use_temp_path: 'off'
+      settings:
+        revalidate: 'on'
+        # min_uses: '3'
+        use_stale: 'error timeout updating http_500 http_502 http_503 http_504'
+        background_update: 'on'
+        lock: 'on'
+
+  serve:
+    path: '/var/www/html'
+    index: ['index.html']
+
+  ssl:
+    mode: 'ca'  # existing/selfsigned/ca/letsencrypt
+    # existing:
+    #   We expect the certs to be placed in the role's 'files' directory named like the site
+    #   Example: files/certs/ansibleguy.key and files/certs/ansibleguy.crt
+    # letsencrypt:
+    #   Host needs to have a valid public dns record pointed at it
+    #   Needs to be publicly reachable over port 80/tcp
+    cert:
+      name:
+      cn: 'Nginx Certificate'
+      org: 'AnsibleGuy'
+      ou:
+      country:
+      state:
+      locality:
+      email:
+      crl_distribution: []
+    ca:
+      file:  # can be used if you want to use an existing ca
+      cn:
+      org:
+      ou:
+      country:
+      state:
+      locality:
+      email:
+      pwd:  # it's highly recommended setting a passphrase!
+
+  letsencrypt:
+    key_size:
+    email:
+
+  headers: {}

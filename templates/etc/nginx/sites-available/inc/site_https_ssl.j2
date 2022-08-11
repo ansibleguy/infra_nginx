@@ -1,0 +1,19 @@
+
+  # ssl config
+  ssl_certificate_key '{{ NGINX_CONFIG.ssl.path }}/{{ name }}.key';
+  ssl_certificate     '{{ NGINX_CONFIG.ssl.path }}/{{ name }}{% if site.ssl.mode == 'letsencrypt' %}.fullchain{% elif site.ssl.mode == 'ca' %}.chain{% endif %}.crt';  # should use the certificate chain => top is server cert; bottom root cert
+{% if site.ssl.ca.file is not none %}
+  ssl_trusted_certificate {{ site.ssl.file_ca }};
+  ssl_stapling off;
+  ssl_stapling_verify off;
+{% elif site.ssl.mode == 'ca' %}
+  ssl_trusted_certificate '{{ NGINX_CONFIG.ssl.path }}/ca.crt';
+  ssl_stapling off;
+  ssl_stapling_verify off;
+{% elif site.ssl.mode == 'selfsigned' %}
+  ssl_stapling off;
+  ssl_stapling_verify off;
+{% else %}
+  ssl_stapling on;
+  ssl_stapling_verify on;
+{% endif %}

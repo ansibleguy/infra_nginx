@@ -1,0 +1,84 @@
+---
+
+# see for valid units: https://nginx.org/en/docs/syntax.html
+
+# default config => is overwritten by provided config
+defaults_nginx:
+  user: 'www-data'
+  group: 'www-data'
+  sites: {}
+
+  ipv6: true
+
+  status_page:
+    state: 'present'
+    bind: '127.0.0.1'
+    port: 80
+    path: 'basic_status'
+    allow: []
+
+  log:
+    path: '/var/log/nginx'
+    per_site: true
+    syslog: true
+    syslog_host:
+    syslog_port: 514
+    prefix_ue: 'nginx_'  # log prefix for http site
+    prefix_ssl: 'nginx_'  # log prefix for ssl site
+
+  config:
+    autoindex: 'off'
+    server_tokens: 'off'
+    proxy_pass_request_headers: 'on'
+    proxy_connect_timeout: 150
+    proxy_send_timeout: 100
+    proxy_read_timeout: 100
+    proxy_buffers: '4 32k'
+    client_max_body_size: '50m'
+    client_body_buffer_size: '128k'
+    client_header_buffer_size: '2k'
+    client_header_timeout: '5s'
+    large_client_header_buffers: '3 1k'
+    ssl_session_cache: 'shared:SSL:10m'
+    ssl_session_timeout: '10m'
+    client_body_timeout: '5s'
+    ssl_protocols: 'TLSv1.2 TLSv1.3'
+    ssl_prefer_server_ciphers: 'on'
+    ssl_ciphers: 'EECDH+ECDSA+AESGCM:EECDH+aRSA+AESGCM:!aNULL:!eNULL:!LOW:!3DES:!MD5:!EXP:!PSK:!SRP:!DSS:!RC4'
+    # will fail connection to old browsers (ie11,safari<9)
+    # limit_conn: 'conns 100'  # zero size shared memory zone
+
+  letsencrypt:
+    key_size: 4096
+    path: '/etc/letsencrypt'
+    renew_timer: 'Mon *-*-* 01:00:00'
+    verbosity: 'v'
+    email:
+    renew: false  # if a renewal should be started by the role; the renewal service will auto-renew the certificates otherwise
+
+  ssl:
+    path: '/etc/nginx/ssl'
+    ca:
+      file:  # can be used if you want to use an existing ca
+      cn: 'Nginx CA Certificate'
+      org: 'AnsibleGuy'
+      ou:
+      country:
+      state:
+      locality:
+      email:
+      pwd:  # it's highly recommended setting a passphrase!
+
+  headers:
+    # if first key does not include 'header' => prepend 'add_header'
+    'Strict-Transport-Security': '"max-age=31536000; includeSubDomains" always'
+    'Referrer-Policy': 'same-origin'
+    # 'Content-Security-Policy': "\"default-src 'self'\""  # disabled since it blocks too many common use-cases
+    'X-Frame-Options': 'DENY'
+    'X-Content-Type-Options': 'nosniff'
+    'X-Permitted-Cross-Domain-Policies': 'none'
+    'X-XSS-Protection': '"1; mode=block"'
+    'Set-Cookie': '"Path=/;HttpOnly;Secure;SameSite=none"'
+    # 'Permissions-Policy': ''
+
+NGINX_CONFIG: "{{ defaults_nginx | combine(nginx, recursive=true) }}"

@@ -1,9 +1,30 @@
 ---
 
+- name: "Nginx | Debian | Site '{{ name }}' | Showing debug info - user provided config"
+  ansible.builtin.debug:
+    var: site_item.value
+  when:
+    - debug is defined
+    - debug
+
+- name: "Nginx | Debian | Site '{{ name }}' | Showing debug info - running config"
+  ansible.builtin.debug:
+    var: site
+  when:
+    - debug is defined
+    - debug
+
+# as letsencrypt generator could be skipped on previous run
+- name: "Nginx | Debian | Site '{{ name }}' | Checking if certificate exists"
+  ansible.builtin.stat:
+    path: "{{ NGINX_CONFIG.ssl.path }}/{{ name }}.key"
+  register: ng_site_ssl_key
+
 - name: "Nginx | Debian | Site '{{ name }}' | Checking config"
   ansible.builtin.assert:
     that:
       - site.domain is defined
+      - ng_site_ssl_key.stat.exists
 
 - name: "Nginx | Debian | Site '{{ name }}' | Processing local certs"
   ansible.builtin.import_tasks: add_certs.yml

@@ -1,0 +1,15 @@
+
+  # log config
+{% if NGINX_CONFIG.log.syslog and NGINX_CONFIG.log.syslog_host is not none %}
+  access_log syslog:server={{ NGINX_CONFIG.log.syslog_host }}:{{ NGINX_CONFIG.log.syslog_port }},tag={{ NGINX_CONFIG.log.prefix_ssl }}{{ name }},nohostname,severity=info combined;
+  error_log  syslog:server={{ NGINX_CONFIG.log.syslog_host }}:{{ NGINX_CONFIG.log.syslog_port }},tag={{ NGINX_CONFIG.log.prefix_ssl }}{{ name }},nohostname,severity=error;
+{% elif NGINX_CONFIG.log.syslog %}
+  access_log syslog:server=unix:/dev/log,tag={{ NGINX_CONFIG.log.prefix_ssl }}{{ name }},nohostname,severity=info combined;
+  error_log  syslog:server=unix:/dev/log,tag={{ NGINX_CONFIG.log.prefix_ssl }}{{ name }},nohostname,severity=error;
+{% elif NGINX_CONFIG.log.per_site %}
+  error_log {{ NGINX_CONFIG.log.path }}/{{ name }}_error.log;
+  access_log {{ NGINX_CONFIG.log.path }}/{{ name }}_access.log;
+{% else %}
+  error_log {{ NGINX_CONFIG.log.path }}/error.log;
+  access_log {{ NGINX_CONFIG.log.path }}/access.log;
+{% endif %}

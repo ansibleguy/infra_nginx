@@ -1,5 +1,19 @@
 ---
 
+- name: Nginx | Debian | Showing debug info - user provided config
+  ansible.builtin.debug:
+    var: nginx
+  when:
+    - debug is defined
+    - debug
+
+- name: Nginx | Debian | Showing debug info - running config
+  ansible.builtin.debug:
+    var: NGINX_CONFIG
+  when:
+    - debug is defined
+    - debug
+
 - name: Nginx | Debian | Installing nginx
   ansible.builtin.apt:
     pkg: "{{ NGINX_HC.packages }}"
@@ -13,49 +27,25 @@
     shell: '/usr/sbin/nologin'
     comment: 'Nginx Service User'
 
-- name: Nginx | Debian | Setting service user
+- name: Nginx | Debian | Setting base config
   ansible.builtin.lineinfile:
     path: '/etc/nginx/nginx.conf'
-    regexp: '^user '
-    line: "user {{ NGINX_CONFIG.user }};"
+    regexp: "{{ item.search }}"
+    line: "{{ item.replace }}"
     validate: "nginx -t -c %s"
+    insertafter: "{{ item.after | default(omit) }}"
+    backrefs: true
   register: nginx_user_update_raw
+  loop: "{{ NGINX_HC.main_config }}"
+
+# todo: implement GeoIP
+#   https://fedingo.com/how-to-block-ip-by-country-in-nginx/
 
 - name: Nginx | Debian | Restarting nginx
   ansible.builtin.systemd:
     name: 'nginx.service'
     state: restarted
   when: nginx_user_update_raw.changed
-
-# is an additional site-loop since certificates can be pre-/absent
-- name: Nginx | Debian | Getting certificates using LetsEncrypt
-  ansible.builtin.include_role:
-    name: ansibleguy.infra_certs
-  when: site.ssl.mode == 'letsencrypt'
-  vars:
-    site: "{{ default_site_config | combine(site_item.value, recursive=true) }}"
-    name: "{{ site_item.key | safe_key }}"
-    certs:
-      mode: 'le_certbot'
-      path: "{{ NGINX_CONFIG.ssl.path }}"
-      owner_key: "{{ NGINX_CONFIG.user }}"
-      group_key: "{{ NGINX_CONFIG.group }}"
-      owner_cert: "{{ NGINX_CONFIG.user }}"
-      group_cert: "{{ NGINX_CONFIG.group }}"
-      letsencrypt:
-        certs: "{{ site | prepare_letsencrypt(name) }}"
-        path: "{{ NGINX_CONFIG.letsencrypt.path }}"
-        email: "{{ NGINX_CONFIG.letsencrypt.email }}"
-        renew_timer: "{{ NGINX_CONFIG.letsencrypt.renew_timer }}"
-        verbosity: "{{ NGINX_CONFIG.letsencrypt.verbosity }}"
-        service: 'nginx'
-        renew: "{{ NGINX_CONFIG.letsencrypt.renew }}"
-        state: "{{ site_item.value.state }}"
-  loop_control:
-    loop_var: site_item
-  with_dict: "{{ NGINX_CONFIG.sites }}"
-  no_log: true
-  tags: [certs]
 
 - name: Nginx | Debian | Removing default site
   ansible.builtin.file:
@@ -67,40 +57,8 @@
   when: NGINX_CONFIG.status_page.state != 'present'
   tags: [base, config, sites]
 
-- name: Nginx | Debian | Removing site
-  ansible.builtin.include_tasks: rm_site.yml
-  when: site.state != 'present'
-  vars:
-    site: "{{ default_site_config | combine(site_item.value, recursive=true) }}"
-    name: "{{ site_item.key | safe_key }}"
-  loop_control:
-    loop_var: site_item
-  with_dict: "{{ NGINX_CONFIG.sites }}"
-  no_log: true
-  tags: [config, sites, certs]
-
-- name: Nginx | Debian | Reloading nginx
-  ansible.builtin.systemd:
-    name: 'nginx.service'
-    state: reloaded
-  tags: [base, config, sites, certs]
-
-- name: Nginx | Debian | Adding status page
-  ansible.builtin.include_tasks: add_status.yml
-  when: NGINX_CONFIG.status_page.state == 'present'
-  tags: [base, config, sites]
-
-- name: Nginx | Debian | Adding site
-  ansible.builtin.include_tasks: add_site.yml
-  when: site.state == 'present'
-  vars:
-    site: "{{ default_site_config | combine(site_item.value, recursive=true) }}"
-    name: "{{ site_item.key | safe_key }}"
-  loop_control:
-    loop_var: site_item
-  with_dict: "{{ NGINX_CONFIG.sites }}"
-  no_log: true
-  tags: [config, sites, certs]
+- name: Nginx | Debian | Processing sites
+  ansible.builtin.import_tasks: sites.yml
 
 - name: Nginx | Debian | Starting/Enabling nginx
   ansible.builtin.systemd:

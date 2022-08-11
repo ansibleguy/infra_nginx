@@ -1,0 +1,25 @@
+
+{% if site.security.restrict_methods %}
+  # security config
+  if ($request_method !~ ^({{ NGINX_HC.restricted_methods | join('|') }})$ ) {
+    return 405;
+  }
+{% endif %}
+
+{% if NGINX_CONFIG.config | length > 0 %}
+  # global config
+{% for setting, value in NGINX_CONFIG.config.items() %}
+{%   if setting not in NGINX_HC.config_graylist and setting not in site.config and value not in NONE_VALUES %}
+  {{ setting }} {{ value }};
+{%   endif %}
+{% endfor %}
+{% endif %}
+
+{% if site.config | length > 0 %}
+  # site-specific config
+{% for setting, value in site.config.items() %}
+{%   if setting not in NGINX_HC.config_graylist and value not in NONE_VALUES %}
+  {{ setting }} {{ value }};
+{%   endif %}
+{% endfor %}
+{% endif %}

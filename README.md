@@ -24,7 +24,7 @@ Ansible Role to deploy one or multiple NGINX sites on a linux server.
     * serve
     * redirect
   * Support for specific configurations using the 'config' and 'config_additions' parameters
-
+  * Option to filter 'locations' by GeoIP => COMING SOON (:
 
   * **Default config**:
     * Disabled: <TLS1.2, unsecure ciphers, autoindex, servertokens
@@ -70,7 +70,13 @@ This will also be done automatically if no domain is supplied.
 * **Warning:** Not every setting/variable you provide will be checked for validity. Bad config might break the role!
 
 
-* **Info:** To disable default settings and headers => just set their value to: ''
+* **Info:** To disable default settings and headers => just set their value to: '' (_empty string_)
+
+
+* **Info:** If you are filtering web-requests via GeoIP filter using your firewall => LetsEncrypt will work with only opening port 80 to the world.
+
+  Requests other than '.well-known/acme-challenge/' are just redirected to 443.
+
 
 ## Requirements
 
@@ -148,3 +154,9 @@ There are also some useful **tags** available:
 * sites
 * config => only update site config (_excluding certificates_)
 * certs
+* letsencrypt
+
+To debug errors - you can set the 'debug' variable at runtime:
+```bash
+ansible-playbook -K -D -i inventory/hosts.yml playbook.yml -e debug=yes
+```

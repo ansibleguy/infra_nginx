@@ -1,0 +1,67 @@
+
+# https listener
+server {
+  listen {% if site.listen != '' %}{{ site.listen }}:{% endif %}{{ site.port_ssl }} ssl {% if site.http_version | int == 2 %}http2{% elif site.http_version | int == 3 %}http3{% endif %};
+{% if NGINX_CONFIG.ipv6 and site.listen_ipv6 != '' %}
+  listen {{ site.listen_ipv6 }}:{{ site.port_ssl }} ssl {% if site.http_version | int == 2 %}http2{% elif site.http_version | int == 3 %}http3{% endif %};
+{% endif %}
+  server_name {{ site.domain }}{% for alias in site.aliases %} {{ alias }}{% endfor %}{% if site.ip is not none %} {{ site.ip }}{% endif %};
+
+{% if site.main_redirect %}
+  if ($host != $server_name) {
+    rewrite ^/(.*) $scheme://$server_name/$1 permanent;
+  }
+{% endif %}
+
+{% include "inc/site_https_log.j2" %}
+{% include "inc/site_https_ssl.j2" %}
+{% include "inc/site_https_config.j2" %}
+{% include "inc/site_https_headers.j2" %}
+
+  location / {
+{% if site.mode == 'proxy' %}
+    # proxy-mode config
+    proxy_pass {{ site.proxy.proto }}://{{ site.proxy.dns | default(site.proxy.ip, true) }}:{{ site.proxy.port }};
+
+{%   for option, value in site.proxy.headers.items() %}
+{%     if value not in NONE_VALUES %}
+    proxy_set_header {{ option }} {{ value }};
+{%     endif %}
+{%   endfor %}
+
+{%   if site.proxy.cache.enable %}
+    proxy_cache {{ name }}_cache;
+{%     for setting, value in site.proxy.cache.settings.items() %}
+    proxy_cache_{{ setting }} {{ value }};
+{%     endfor %}
+{%   endif %}
+
+{% elif site.mode == 'redirect' %}
+    # redirect-mode config
+{%   if site.redirect.request_uri %}
+    return 302 {{ site.redirect.target }}$request_uri;
+{%   else %}
+    return 302 {{ site.redirect.target }};
+{%   endif %}
+
+{% elif site.mode == 'serve' %}
+    # serve-mode config
+    root {{ site.serve.path }};
+    index {% for ind in site.serve.index %}{{ ind }} {% endfor %};
+
+    location / {
+        try_files $uri $uri/ /{{ site.serve.index[0] }};
+    }
+
+{% endif %}
+
+  }
+
+{% if site.config_additions | length > 0 %}
+  # additional lines
+{% endif %}
+{% for line in site.config_additions %}
+  {{ line }}
+{% endfor %}
+
+}
