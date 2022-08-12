@@ -57,7 +57,9 @@ Ansible Role to deploy one or multiple NGINX sites on a linux server.
 * **Note:** this role currently only supports debian-based systems
 
 
-* **Note:** Most of this functionality can be opted in or out using the main defaults file and variables!
+* **Note:** Most of the role's functionality can be opted in or out.
+
+  For all available options - see the default-config located in the main defaults-file!
 
 
 * **Note:** This role expects that the site's unencrypted 'server' will only redirect to its encrypted connection.
