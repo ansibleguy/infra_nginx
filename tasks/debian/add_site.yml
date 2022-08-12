@@ -14,6 +14,11 @@
     - debug is defined
     - debug
 
+- name: "Nginx | Debian | Site '{{ name }}' | Processing local certs"
+  ansible.builtin.import_tasks: add_certs.yml
+  when: "site.ssl.mode in ['selfsigned', 'existing', 'ca']"
+  tags: [certs, sites]
+
 # as letsencrypt generator could be skipped on previous run
 - name: "Nginx | Debian | Site '{{ name }}' | Checking if certificate exists"
   ansible.builtin.stat:
@@ -26,11 +31,6 @@
       - site.domain is defined
       - ng_site_ssl_key.stat.exists
 
-- name: "Nginx | Debian | Site '{{ name }}' | Processing local certs"
-  ansible.builtin.import_tasks: add_certs.yml
-  when: "site.ssl.mode in ['selfsigned', 'existing', 'ca']"
-  tags: [certs, sites]
-
 - name: "Nginx | Debian | Site '{{ name }}' | Adding cache directory"
   ansible.builtin.file:
     path: "{{ site.proxy.cache.path }}/site_{{ name }}"
@@ -42,6 +42,7 @@
   ansible.builtin.template:
     src: 'templates/etc/nginx/sites-available/site.j2'
     dest: "/etc/nginx/sites-available/site_{{ name }}"
+    mode: 0640
   tags: [config, sites]
 
 - name: "Nginx | Debian | Site '{{ name }}' | Enabling site config"

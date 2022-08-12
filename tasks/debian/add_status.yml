@@ -4,6 +4,7 @@
   ansible.builtin.template:
     src: 'templates/etc/nginx/sites-available/status.j2'
     dest: '/etc/nginx/sites-available/status'
+    mode: 0640
   tags: [config, sites, base]
 
 - name: Nginx | Debian | Status page | Enabling site config
