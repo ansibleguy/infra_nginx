@@ -72,3 +72,4 @@
     name: 'nginx.service'
     state: restarted
   tags: [base, config, sites, certs]
+  changed_when: false

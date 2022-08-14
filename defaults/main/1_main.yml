@@ -1,5 +1,7 @@
 ---
 
+# todo: add option to deploy and configure a fallback/catch-all site
+
 # see for valid units: https://nginx.org/en/docs/syntax.html
 
 # default config => is overwritten by provided config
