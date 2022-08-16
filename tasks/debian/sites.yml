@@ -2,11 +2,16 @@
 
 # todo: option for security.txt
 
-# is an additional site-loop since certificates can be pre-/absent
+- name: Nginx | Debian | Checking certificate config
+  ansible.builtin.set_fact:
+    ng_letsencrypt_certs: "{{ NGINX_CONFIG.sites | prepare_letsencrypt(NGINX_CONFIG.state | default(defaults_site.state),
+    NGINX_CONFIG.letsencrypt.email, only_site | default(none)) }}"
+  tags: [certs, letsencrypt]
+
 - name: Nginx | Debian | Getting certificates using LetsEncrypt
   ansible.builtin.include_role:
     name: ansibleguy.infra_certs
-  when: certs
+  when: ng_letsencrypt_certs | length > 0
   vars:
     certs:
       mode: 'le_certbot'
@@ -16,13 +21,13 @@
       owner_cert: "{{ NGINX_CONFIG.user }}"
       group_cert: "{{ NGINX_CONFIG.group }}"
       letsencrypt:
-        certs: "{{ NGINX_CONFIG.sites | prepare_letsencrypt(NGINX_CONFIG.state | default(defaults_site.state), NGINX_CONFIG.letsencrypt.email, only_site | default(none)) }}"
+        certs: "{{ ng_letsencrypt_certs }}"
         path: "{{ NGINX_CONFIG.letsencrypt.path }}"
         renew_timer: "{{ NGINX_CONFIG.letsencrypt.renew_timer }}"
         verbosity: "{{ NGINX_CONFIG.letsencrypt.verbosity }}"
         service: 'nginx'
         renew: "{{ NGINX_CONFIG.letsencrypt.renew }}"
-#  no_log: true
+  no_log: true
   tags: [certs, letsencrypt]
 
 - name: Nginx | Debian | Removing site
