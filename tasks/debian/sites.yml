@@ -6,12 +6,8 @@
 - name: Nginx | Debian | Getting certificates using LetsEncrypt
   ansible.builtin.include_role:
     name: ansibleguy.infra_certs
-  when:
-    - site.ssl.mode == 'letsencrypt'
-    - site.domain is defined
+  when: certs
   vars:
-    site: "{{ defaults_site | combine(site_item.value, recursive=true) }}"
-    name: "{{ site_item.key | safe_key }}"
     certs:
       mode: 'le_certbot'
       path: "{{ NGINX_CONFIG.ssl.path }}"
@@ -20,23 +16,23 @@
       owner_cert: "{{ NGINX_CONFIG.user }}"
       group_cert: "{{ NGINX_CONFIG.group }}"
       letsencrypt:
-        certs: "{{ site | prepare_letsencrypt(name) }}"
+        certs: "{{ NGINX_CONFIG.sites | prepare_letsencrypt(NGINX_CONFIG.state | default(defaults_site.state), NGINX_CONFIG.letsencrypt.email, only_site | default(none)) }}"
         path: "{{ NGINX_CONFIG.letsencrypt.path }}"
-        email: "{{ NGINX_CONFIG.letsencrypt.email }}"
         renew_timer: "{{ NGINX_CONFIG.letsencrypt.renew_timer }}"
         verbosity: "{{ NGINX_CONFIG.letsencrypt.verbosity }}"
         service: 'nginx'
         renew: "{{ NGINX_CONFIG.letsencrypt.renew }}"
-        state: "{{ site_item.value.state | default(defaults_site.state) }}"
-  loop_control:
-    loop_var: site_item
-  with_dict: "{{ NGINX_CONFIG.sites }}"
-  no_log: true
+#  no_log: true
   tags: [certs, letsencrypt]
 
 - name: Nginx | Debian | Removing site
   ansible.builtin.include_tasks: rm_site.yml
-  when: site.state != 'present'
+  when: >
+    site.state != 'present' and
+    (only_site is undefined or
+    only_site | safe_key == name or
+    only_site | safe_key in name or
+    name in only_site | safe_key)
   vars:
     site: "{{ defaults_site | combine(site_item.value, recursive=true) }}"
     name: "{{ site_item.key | safe_key }}"
@@ -60,7 +56,12 @@
 
 - name: Nginx | Debian | Adding site
   ansible.builtin.include_tasks: add_site.yml
-  when: site.state == 'present'
+  when: >
+    site.state == 'present' and
+    (only_site is undefined or
+    only_site | safe_key == name or
+    only_site | safe_key in name or
+    name in only_site | safe_key)
   vars:
     site: "{{ defaults_site | combine(site_item.value, recursive=true) }}"
     name: "{{ site_item.key | safe_key }}"

@@ -21,15 +21,37 @@ class FilterModule(object):
 
         return opt2
 
-    @staticmethod
-    def prepare_letsencrypt(site: dict, name: str) -> dict:
-        domains = [site['domain']]
-        domains.extend(site['aliases'])
-        return {
-            name: {
-                'domains': domains,
-                'email': site['letsencrypt']['email'],
-                'key_size': site['letsencrypt']['key_size'],
-                'state': site['state'],
-            }
-        }
+    @classmethod
+    def prepare_letsencrypt(cls, sites: dict, state: str, email: str = None, only_site: str = None) -> dict:
+        certs = {}
+        for unsafe_name, site in sites.items():
+            if only_site is None or (unsafe_name == only_site or
+                                     only_site in unsafe_name or
+                                     unsafe_name in only_site):
+
+                if site['ssl']['mode'] == 'letsencrypt':
+                    _name = cls.safe_key(unsafe_name)
+                    _domains = [site['domain']]
+                    _state, _email, _key_size = state, email, None
+
+                    if 'aliases' in site:
+                        _domains.extend(site['aliases'])
+
+                    if 'letsencrypt' in site:
+                        if 'email' in site['letsencrypt']:
+                            _email = site['letsencrypt']['email']
+
+                        if 'key_size' in site['letsencrypt']:
+                            _key_size = site['letsencrypt']['key_size']
+
+                    if 'state' in site:
+                        _state = site['state']
+
+                    certs[_name] = {
+                        'domains': _domains,
+                        'email': _email,
+                        'key_size': _key_size,
+                        'state': _state,
+                    }
+
+        return certs

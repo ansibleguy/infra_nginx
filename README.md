@@ -65,6 +65,11 @@ Ansible Role to deploy one or multiple NGINX sites on a linux server.
   For all available options - see the default-config located in the main/site defaults-file!
 
 
+* **Info:** Many variables can be set either on 'global' or 'per-site' scope.
+
+  Site config is always overruling the global one.
+
+
 * **Note:** This role expects that the site's unencrypted 'server' will only redirect to its encrypted connection.
 
 
@@ -153,6 +158,13 @@ Run the playbook:
 ```bash
 ansible-playbook -K -D -i inventory/hosts.yml playbook.yml
 ```
+
+To only process a specific site: (_and safe time_)
+```bash
+ansible-playbook -K -D -i inventory/hosts.yml playbook.yml -e only_site=SITE_NAME
+# note: multiple comma-separated sites should also work
+```
+
 
 There are also some useful **tags** available:
 * base => only configure basics; sites will not be touched

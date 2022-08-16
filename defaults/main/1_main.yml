@@ -9,6 +9,7 @@ defaults_nginx:
   user: 'www-data'
   group: 'www-data'
   sites: {}
+  state: 'present'
 
   ipv6: true
 
