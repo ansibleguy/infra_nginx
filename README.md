@@ -88,6 +88,10 @@ This will also be done automatically if no domain is supplied.
   Requests other than '.well-known/acme-challenge/' are just redirected to 443.
 
 
+* **Info:** For LetsEncrypt renewal to work, you must allow outgoing connections to:
+
+  80/tcp, 443/tcp+udp to acme-v02.api.letsencrypt.org, staging-v02.api.letsencrypt.org (_debug mode_) and r3.o.lencr.org
+
 ## Requirements
 
 * Community collection and certificate role: ```ansible-galaxy install -r requirements.yml```
