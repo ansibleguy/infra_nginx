@@ -77,8 +77,9 @@ defaults_nginx:
     'Strict-Transport-Security': '"max-age=31536000; includeSubDomains" always'
     'Referrer-Policy': 'same-origin'
     # 'Content-Security-Policy': "\"default-src 'self'\""  # disabled since it blocks too many common use-cases
-    'X-Frame-Options': 'DENY'
-    'X-Content-Type-Options': 'nosniff'
+    # 'Content-Security-Policy': "default-src 'none'; script-src 'self'; connect-src 'self'; img-src 'self'; style-src 'self';"
+    'X-Frame-Options': 'DENY'  # https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Frame-Options
+    'X-Content-Type-Options': 'nosniff'  # https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Content-Type-Options
     'X-Permitted-Cross-Domain-Policies': 'none'
     'X-XSS-Protection': '"1; mode=block"'
     'Set-Cookie': '"Path=/;HttpOnly;Secure;SameSite=none"'
