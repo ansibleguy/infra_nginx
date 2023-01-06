@@ -1,0 +1,21 @@
+---
+
+# todo: test 'plain_site=false'
+
+- name: Converge
+  hosts: all
+  vars:
+    nginx:
+      sites:
+        test1:
+          domain: 'nginx.test.ansibleguy.net'
+
+          ssl:
+            mode: 'ca'
+            cert:
+              cn: 'Nginx'
+              org: 'AnsibleGuy Test'
+              email: 'testmaster@ansibleguy.net'
+
+  roles:
+    - ansibleguy.infra_nginx

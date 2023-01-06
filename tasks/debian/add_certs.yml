@@ -1,11 +1,5 @@
 ---
 
-- name: "Nginx | Debian | Site '{{ name }}' | Certs | Creating public directory"
-  ansible.builtin.file:
-    path: "{{ NGINX_CONFIG.ssl.path }}"
-    state: directory
-    mode: 0755
-
 - name: "Nginx | Debian | Site '{{ name }}' | Certs | Creating certificates"
   ansible.builtin.import_role:
     name: ansibleguy.infra_certs

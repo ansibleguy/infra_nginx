@@ -1,0 +1,19 @@
+---
+
+- name: Verify
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: Checking that service is running and enabled
+      ansible.builtin.systemd:
+        name: 'nginx.service'
+        enabled: true
+        state: started
+      check_mode: true
+      register: svc_test
+      failed_when: svc_test.changed
+
+    - name: Checking that service survives restart
+      ansible.builtin.systemd:
+        name: 'nginx.service'
+        state: restarted
