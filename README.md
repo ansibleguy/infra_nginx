@@ -13,6 +13,18 @@ Ansible Role to deploy one or multiple NGINX sites on a linux server.
 **Tested:**
 * Debian 11
 
+## Install
+
+```bash
+ansible-galaxy install ansibleguy.infra_nginx
+
+# or to custom role-path
+ansible-galaxy install ansibleguy.infra_nginx --roles-path ./roles
+
+# install dependencies
+ansible-galaxy install -r requirements.yml
+```
+
 ## Functionality
 
 * **Package installation**
@@ -91,10 +103,6 @@ This will also be done automatically if no domain is supplied.
 * **Info:** For LetsEncrypt renewal to work, you must allow outgoing connections to:
 
   80/tcp, 443/tcp+udp to acme-v02.api.letsencrypt.org, staging-v02.api.letsencrypt.org (_debug mode_) and r3.o.lencr.org
-
-## Requirements
-
-* Community collection and certificate role: ```ansible-galaxy install -r requirements.yml```
 
 
 ## Usage
