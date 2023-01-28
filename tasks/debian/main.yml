@@ -56,6 +56,9 @@
   ansible.builtin.include_tasks: rm_status.yml
   when: NGINX_CONFIG.status_page.state != 'present'
   tags: [base, config, sites]
+  args:
+    apply:
+      tags: [base, config, sites]
 
 - name: Nginx | Debian | Processing sites
   ansible.builtin.import_tasks: sites.yml

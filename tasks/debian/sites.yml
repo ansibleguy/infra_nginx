@@ -29,6 +29,9 @@
         renew: "{{ NGINX_CONFIG.letsencrypt.renew }}"
   no_log: true
   tags: [certs, letsencrypt]
+  args:
+    apply:
+      tags: [certs, letsencrypt]
 
 - name: Nginx | Debian | Removing site
   ansible.builtin.include_tasks: rm_site.yml
@@ -46,6 +49,9 @@
   with_dict: "{{ NGINX_CONFIG.sites }}"
   no_log: true
   tags: [config, sites, certs]
+  args:
+    apply:
+      tags: [config, sites, certs]
 
 - name: Nginx | Debian | Reloading nginx
   ansible.builtin.systemd:
@@ -58,6 +64,9 @@
   ansible.builtin.include_tasks: add_status.yml
   when: NGINX_CONFIG.status_page.state == 'present'
   tags: [base, config, sites]
+  args:
+    apply:
+      tags: [base, config, sites]
 
 - name: Nginx | Debian | Adding site
   ansible.builtin.include_tasks: add_site.yml
@@ -75,3 +84,6 @@
   with_dict: "{{ NGINX_CONFIG.sites }}"
   no_log: true
   tags: [config, sites, certs]
+  args:
+    apply:
+      tags: [config, sites, certs]

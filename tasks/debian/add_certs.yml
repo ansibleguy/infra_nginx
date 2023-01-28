@@ -1,7 +1,7 @@
 ---
 
 - name: "Nginx | Debian | Site '{{ name }}' | Certs | Creating certificates"
-  ansible.builtin.import_role:
+  ansible.builtin.include_role:
     name: ansibleguy.infra_certs
   vars:
     certs:
@@ -34,6 +34,9 @@
         email: "{{ site.ssl.ca.email | default(NGINX_CONFIG.ssl.ca.email, true) }}"
         pwd: "{{ site.ssl.ca.pwd | default(NGINX_CONFIG.ssl.ca.pwd, true) }}"
   when: "site.ssl.mode in ['ca', 'selfsigned']"
+  args:
+    apply:
+      tags: [certs, sites]
 
 - name: "Nginx | Debian | Site '{{ name }}' | Certs | Trying to copy cert pub"
   ansible.builtin.copy:
