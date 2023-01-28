@@ -43,6 +43,8 @@
     src: 'templates/etc/nginx/sites-available/site.j2'
     dest: "/etc/nginx/sites-available/site_{{ name }}"
     mode: 0640
+    owner: 'root'
+    group: "{{ NGINX_CONFIG.group }}"
   tags: [config, sites]
 
 - name: "Nginx | Debian | Site '{{ name }}' | Enabling site config"
