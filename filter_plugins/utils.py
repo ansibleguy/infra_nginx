@@ -50,8 +50,10 @@ class FilterModule(object):
                     certs[_name] = {
                         'domains': _domains,
                         'email': _email,
-                        'key_size': _key_size,
                         'state': _state,
                     }
+
+                    if _key_size is not None:
+                        certs[_name]['key_size'] = _key_size
 
         return certs
