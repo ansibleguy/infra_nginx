@@ -3,16 +3,12 @@
 - name: "Nginx | Debian | Site '{{ name }}' | Showing debug info - user provided config"
   ansible.builtin.debug:
     var: site_item.value
-  when:
-    - debug is defined
-    - debug
+  when: debug | bool
 
 - name: "Nginx | Debian | Site '{{ name }}' | Showing debug info - running config"
   ansible.builtin.debug:
     var: site
-  when:
-    - debug is defined
-    - debug
+  when: debug | bool
 
 - name: "Nginx | Debian | Site '{{ name }}' | Processing local certs"
   ansible.builtin.import_tasks: add_certs.yml

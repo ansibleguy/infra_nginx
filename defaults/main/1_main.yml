@@ -86,3 +86,5 @@ defaults_nginx:
     # 'Permissions-Policy': ''
 
 NGINX_CONFIG: "{{ defaults_nginx | combine(nginx, recursive=true) }}"
+
+debug: false

@@ -3,16 +3,12 @@
 - name: Nginx | Debian | Showing debug info - user provided config
   ansible.builtin.debug:
     var: nginx
-  when:
-    - debug is defined
-    - debug
+  when: debug | bool
 
 - name: Nginx | Debian | Showing debug info - running config
   ansible.builtin.debug:
     var: NGINX_CONFIG
-  when:
-    - debug is defined
-    - debug
+  when: debug | bool
 
 - name: Nginx | Debian | Installing nginx
   ansible.builtin.apt:
