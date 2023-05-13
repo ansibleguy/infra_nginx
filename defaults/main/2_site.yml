@@ -19,6 +19,7 @@ defaults_site:
   config: {}  # site-specific setting-value pairs
   config_additions: []  # lines that will 1-to-1 be appended to the site-config (directory config etc.)
   # BE AWARE that you might break the config-syntax if you're not careful
+  config_additions_root: []  # lines that will 1-to-1 be appended inside 'location / {}'
 
   security:
     restrict_methods: true  # disable anything but GET/POST/HEAD methods; if you're running a web-application you might need to disable this filter

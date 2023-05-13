@@ -18,6 +18,12 @@ server {
 {% include "inc/site_https_config.j2" %}
 {% include "inc/site_https_headers.j2" %}
 
+{% if site.mode == 'serve' %}
+  # serve-mode config
+  root {{ site.serve.path }};
+  index {% for ind in site.serve.index %}{{ ind }} {% endfor %};
+{% endif %}
+
   location / {
 {% if site.mode == 'proxy' %}
     # proxy-mode config
@@ -46,14 +52,15 @@ server {
 
 {% elif site.mode == 'serve' %}
     # serve-mode config
-    root {{ site.serve.path }};
-    index {% for ind in site.serve.index %}{{ ind }} {% endfor %};
-
-    location / {
-        try_files $uri $uri/ /{{ site.serve.index[0] }};
-    }
-
+    try_files $uri $uri/ /{{ site.serve.index[0] }};
 {% endif %}
+
+{% if site.config_additions_root | length > 0 %}
+    # additional lines
+{% endif %}
+{% for line in site.config_additions_root %}
+    {{ line }}
+{% endfor %}
 
   }
 
