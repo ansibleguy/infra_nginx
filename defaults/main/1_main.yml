@@ -85,6 +85,4 @@ defaults_nginx:
     'Set-Cookie': '"Path=/;HttpOnly;Secure;SameSite=none"'
     # 'Permissions-Policy': ''
 
-NGINX_CONFIG: "{{ defaults_nginx | combine(nginx, recursive=true) }}"
-
 debug: false

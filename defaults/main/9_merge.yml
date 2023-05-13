@@ -1,0 +1,3 @@
+---
+
+NGINX_CONFIG: "{{ defaults_nginx | combine(nginx, recursive=true) }}"
