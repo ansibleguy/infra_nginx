@@ -6,6 +6,7 @@
       - nginx is defined
       - nginx.sites is defined
       - nginx.sites | length > 0
+  tags: always
 
 - name: Nginx | Processing debian config
   ansible.builtin.import_tasks: debian/main.yml

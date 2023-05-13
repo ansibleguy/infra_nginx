@@ -1,6 +1,6 @@
 ---
 
-- name: "Nginx | Debian | Site '{{ name }}' | Certs | Creating certificates"
+- name: "Nginx | Site '{{ name }}' | Certs | Creating certificates"
   ansible.builtin.include_role:
     name: ansibleguy.infra_certs
   vars:
@@ -38,7 +38,7 @@
     apply:
       tags: [certs, sites]
 
-- name: "Nginx | Debian | Site '{{ name }}' | Certs | Trying to copy cert pub"
+- name: "Nginx | Site '{{ name }}' | Certs | Trying to copy cert pub"
   ansible.builtin.copy:
     dest: "{{ NGINX_CONFIG.ssl.path }}/{{ name }}.crt"
     src: "files/certs/{{ name }}.crt"
@@ -49,7 +49,7 @@
   register: copy_cert_pub
   when: site.ssl.mode == 'existing'
 
-- name: "Nginx | Debian | Site '{{ name }}' | Certs | Trying to copy cert pk"
+- name: "Nginx | Site '{{ name }}' | Certs | Trying to copy cert pk"
   ansible.builtin.copy:
     dest: "{{ NGINX_CONFIG.ssl.path }}/{{ name }}.key"
     src: "files/certs/{{ name }}.key"

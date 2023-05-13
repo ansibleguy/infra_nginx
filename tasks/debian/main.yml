@@ -1,29 +1,29 @@
 ---
 
-- name: Nginx | Debian | Showing debug info - user provided config
+- name: Nginx | Showing debug info - user provided config
   ansible.builtin.debug:
     var: nginx
   when: debug | bool
 
-- name: Nginx | Debian | Showing debug info - running config
+- name: Nginx | Showing debug info - running config
   ansible.builtin.debug:
     var: NGINX_CONFIG
   when: debug | bool
 
-- name: Nginx | Debian | Installing nginx
+- name: Nginx | Installing nginx
   ansible.builtin.apt:
     pkg: "{{ NGINX_HC.packages }}"
     state: present
     update_cache: true
   tags: [base]
 
-- name: Nginx | Debian | Creating service user
+- name: Nginx | Creating service user
   ansible.builtin.user:
     name: "{{ NGINX_CONFIG.user }}"
     shell: '/usr/sbin/nologin'
     comment: 'Nginx Service User'
 
-- name: Nginx | Debian | Setting base config
+- name: Nginx | Setting base config
   ansible.builtin.lineinfile:
     path: '/etc/nginx/nginx.conf'
     regexp: "{{ item.search }}"
@@ -37,18 +37,18 @@
 # todo: implement GeoIP
 #   https://fedingo.com/how-to-block-ip-by-country-in-nginx/
 
-- name: Nginx | Debian | Restarting nginx
+- name: Nginx | Restarting nginx
   ansible.builtin.systemd:
     name: 'nginx.service'
     state: restarted
   when: nginx_user_update_raw.changed
 
-- name: Nginx | Debian | Removing default site
+- name: Nginx | Removing default site
   ansible.builtin.file:
     path: '/etc/nginx/sites-enabled/default'
     state: absent
 
-- name: Nginx | Debian | Removing status page
+- name: Nginx | Removing status page
   ansible.builtin.include_tasks: rm_status.yml
   when: NGINX_CONFIG.status_page.state != 'present'
   tags: [base, config, sites]
@@ -56,17 +56,17 @@
     apply:
       tags: [base, config, sites]
 
-- name: Nginx | Debian | Processing sites
+- name: Nginx | Processing sites
   ansible.builtin.import_tasks: sites.yml
 
-- name: Nginx | Debian | Starting/Enabling nginx
+- name: Nginx | Starting/Enabling nginx
   ansible.builtin.systemd:
     name: 'nginx.service'
     enabled: yes
     state: started
   tags: [base]
 
-- name: Nginx | Debian | Restarting nginx  # reload will not enable all config changes.. we could check for changes in the future
+- name: Nginx | Restarting nginx  # reload will not enable all config changes.. we could check for changes in the future
   ansible.builtin.systemd:
     name: 'nginx.service'
     state: restarted

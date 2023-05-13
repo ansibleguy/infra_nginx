@@ -1,6 +1,6 @@
 ---
 
-- name: "Nginx | Debian | Remove Site '{{ name }}' | Removing config"
+- name: "Nginx | Remove Site '{{ name }}' | Removing config"
   ansible.builtin.file:
     path: "{{ item }}"
     state: absent
@@ -9,7 +9,7 @@
     - "/etc/nginx/sites-enabled/site_{{ name }}"
     - "/etc/nginx/sites-available/site_{{ name }}"
 
-- name: "Nginx | Debian | Remove Site '{{ name }}' | Removing local certificates"
+- name: "Nginx | Remove Site '{{ name }}' | Removing local certificates"
   ansible.builtin.file:
     path: "{{ item }}"
     state: absent
@@ -19,7 +19,7 @@
     - "{{ NGINX_CONFIG.ssl.path }}/{{ name }}.csr"
   when: "site.ssl.mode in ['selfsigned', 'existing', 'ca']"
 
-- name: "Nginx | Debian | Remove Site '{{ name }}' | Restarting nginx service"
+- name: "Nginx | Remove Site '{{ name }}' | Restarting nginx service"
   ansible.builtin.systemd:
     name: 'nginx.service'
     state: restarted

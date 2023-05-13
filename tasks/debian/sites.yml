@@ -2,13 +2,13 @@
 
 # todo: option for security.txt
 
-- name: Nginx | Debian | Checking certificate config
+- name: Nginx | Checking certificate config
   ansible.builtin.set_fact:
     ng_letsencrypt_certs: "{{ NGINX_CONFIG.sites | prepare_letsencrypt(NGINX_CONFIG.state | default(defaults_site.state),
     NGINX_CONFIG.letsencrypt.email, only_site | default(none)) }}"
   tags: [certs, letsencrypt]
 
-- name: Nginx | Debian | Getting certificates using LetsEncrypt
+- name: Nginx | Getting certificates using LetsEncrypt
   ansible.builtin.include_role:
     name: ansibleguy.infra_certs
   when: ng_letsencrypt_certs | length > 0
@@ -33,7 +33,7 @@
     apply:
       tags: [certs, letsencrypt]
 
-- name: Nginx | Debian | Removing site
+- name: Nginx | Removing site
   ansible.builtin.include_tasks: rm_site.yml
   when: >
     site.state != 'present' and
@@ -53,14 +53,14 @@
     apply:
       tags: [config, sites, certs]
 
-- name: Nginx | Debian | Reloading nginx
+- name: Nginx | Reloading nginx
   ansible.builtin.systemd:
     name: 'nginx.service'
     state: reloaded
   changed_when: false
   tags: [base, config, sites, certs]
 
-- name: Nginx | Debian | Adding status page
+- name: Nginx | Adding status page
   ansible.builtin.include_tasks: add_status.yml
   when: NGINX_CONFIG.status_page.state == 'present'
   tags: [base, config, sites]
@@ -68,7 +68,7 @@
     apply:
       tags: [base, config, sites]
 
-- name: Nginx | Debian | Adding site
+- name: Nginx | Adding site
   ansible.builtin.include_tasks: add_site.yml
   when: >
     site.state == 'present' and

@@ -1,6 +1,6 @@
 ---
 
-- name: Nginx | Debian | Removing status page
+- name: Nginx | Removing status page
   ansible.builtin.file:
     path: "{{ item }}"
     state: absent

@@ -1,40 +1,41 @@
 ---
 
-- name: "Nginx | Debian | Site '{{ name }}' | Showing debug info - user provided config"
+- name: "Nginx | Site '{{ name }}' | Showing debug info - user provided config"
   ansible.builtin.debug:
     var: site_item.value
   when: debug | bool
 
-- name: "Nginx | Debian | Site '{{ name }}' | Showing debug info - running config"
+- name: "Nginx | Site '{{ name }}' | Showing debug info - running config"
   ansible.builtin.debug:
     var: site
   when: debug | bool
 
-- name: "Nginx | Debian | Site '{{ name }}' | Processing local certs"
+- name: "Nginx | Site '{{ name }}' | Processing local certs"
   ansible.builtin.import_tasks: add_certs.yml
   when: "site.ssl.mode in ['selfsigned', 'existing', 'ca']"
   tags: [certs, sites]
 
 # as letsencrypt generator could be skipped on previous run
-- name: "Nginx | Debian | Site '{{ name }}' | Checking if certificate exists"
+- name: "Nginx | Site '{{ name }}' | Checking if certificate exists"
   ansible.builtin.stat:
     path: "{{ NGINX_CONFIG.ssl.path }}/{{ name }}.key"
   register: ng_site_ssl_key
 
-- name: "Nginx | Debian | Site '{{ name }}' | Checking config"
+- name: "Nginx | Site '{{ name }}' | Checking config"
   ansible.builtin.assert:
     that:
       - site.domain is defined
       - ng_site_ssl_key.stat.exists
+  tags: always
 
-- name: "Nginx | Debian | Site '{{ name }}' | Adding cache directory"
+- name: "Nginx | Site '{{ name }}' | Adding cache directory"
   ansible.builtin.file:
     path: "{{ site.proxy.cache.path }}/site_{{ name }}"
     state: directory
     mode: 0755
   when: site.proxy.cache.enable
 
-- name: "Nginx | Debian | Site '{{ name }}' | Adding site config"
+- name: "Nginx | Site '{{ name }}' | Adding site config"
   ansible.builtin.template:
     src: 'templates/etc/nginx/sites-available/site.j2'
     dest: "/etc/nginx/sites-available/site_{{ name }}"
@@ -43,7 +44,7 @@
     group: "{{ NGINX_CONFIG.group }}"
   tags: [config, sites]
 
-- name: "Nginx | Debian | Site '{{ name }}' | Enabling site config"
+- name: "Nginx | Site '{{ name }}' | Enabling site config"
   ansible.builtin.file:
     src: "/etc/nginx/sites-available/site_{{ name }}"
     dest: "/etc/nginx/sites-enabled/site_{{ name }}"
