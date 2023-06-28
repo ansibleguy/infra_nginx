@@ -6,8 +6,8 @@ server {
 
   # log config
 {% if NGINX_CONFIG.log.syslog and NGINX_CONFIG.log.syslog_host is not none %}
-  access_log syslog:server={{ NGINX_CONFIG.log.syslog_host }},tag={{ NGINX_CONFIG.log.prefix_ue }}nginx_status,nohostname,severity=info combined;
-  error_log  syslog:server={{ NGINX_CONFIG.log.syslog_host }},tag={{ NGINX_CONFIG.log.prefix_ue }}nginx_status,nohostname,severity=error;
+  access_log syslog:server={{ NGINX_CONFIG.log.syslog_host }},tag={{ NGINX_CONFIG.log.prefix_ue }}status,nohostname,severity=info combined;
+  error_log  syslog:server={{ NGINX_CONFIG.log.syslog_host }},tag={{ NGINX_CONFIG.log.prefix_ue }}status,nohostname,severity=error;
 {% elif NGINX_CONFIG.log.syslog %}
   access_log syslog:server=unix:/dev/log,tag={{ NGINX_CONFIG.log.prefix_ue }}nginx_status,nohostname,severity=info combined;
   error_log  syslog:server=unix:/dev/log,tag={{ NGINX_CONFIG.log.prefix_ue }}nginx_status,nohostname,severity=error;
