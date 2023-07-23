@@ -33,7 +33,7 @@
     path: "{{ site.proxy.cache.path }}/site_{{ name }}"
     state: directory
     mode: 0755
-  when: site.proxy.cache.enable
+  when: site.proxy.cache.enable | bool
 
 - name: "Nginx | Site '{{ name }}' | Adding site config"
   ansible.builtin.template:

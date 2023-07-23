@@ -1,7 +1,7 @@
 # {{ ansible_managed }}
 # ansibleguy.infra_nginx
 
-{% if site.proxy.cache.enable %}
+{% if site.proxy.cache.enable | bool %}
 proxy_cache_path {{ site.proxy.cache.path }}/site_{{ name }} levels={{ site.proxy.cache.levels }} keys_zone={{ name }}_cache:{{ site.proxy.cache.memory }} max_size={{ site.proxy.cache.max_size }} inactive={{ site.proxy.cache.inactive }} use_temp_path={{ site.proxy.cache.use_temp_path }};
 {% endif %}
 

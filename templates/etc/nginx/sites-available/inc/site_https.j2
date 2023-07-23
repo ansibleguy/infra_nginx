@@ -35,7 +35,7 @@ server {
 {%     endif %}
 {%   endfor %}
 
-{%   if site.proxy.cache.enable %}
+{%   if site.proxy.cache.enable | bool %}
     proxy_cache {{ name }}_cache;
 {%     for setting, value in site.proxy.cache.settings.items() %}
     proxy_cache_{{ setting }} {{ value }};
