@@ -1,7 +1,12 @@
 
-{% if site.security.restrict_methods %}
+{% if site.security.restrict_methods | bool %}
   # security config
   if ($request_method !~ ^({{ NGINX_HC.restricted_methods | join('|') }})$ ) {
+    return 405;
+  }
+{% elif site.security.deny_dangerous_methods | bool %}
+  # security config
+  if ($request_method !~ ^({{ NGINX_HC.dangerous_methods | join('|') }})$ ) {
     return 405;
   }
 {% endif %}
