@@ -30,6 +30,7 @@ defaults_site:
   redirect:
     target: 'https://github.com/ansibleguy'
     request_uri: false  # forward the path the client tried to open
+    code: 302
 
   proxy:
     ip: '127.0.0.1'

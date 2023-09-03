@@ -61,4 +61,4 @@
         - {t: 'nginx4', s: 'http', e: 'HTTP/1.1 301'}
         - {t: 'nginx4', s: 'https', e: 'HTTP/2 200', o: '<h1>test4</h1>'}
         - {t: 'nginx5', s: 'http', e: 'HTTP/1.1 301'}
-        - {t: 'nginx5', s: 'https', e: 'HTTP/2 301'}
+        - {t: 'nginx5', s: 'https', e: 'HTTP/2 302'}

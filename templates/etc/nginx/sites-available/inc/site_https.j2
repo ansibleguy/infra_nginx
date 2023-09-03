@@ -55,9 +55,9 @@ server {
 {% elif site.mode == 'redirect' %}
     # redirect-mode config
 {%   if site.redirect.request_uri %}
-    return 302 {{ site.redirect.target }}$request_uri;
+    return {{ site.redirect.code }} {{ site.redirect.target }}$request_uri;
 {%   else %}
-    return 302 {{ site.redirect.target }};
+    return {{ site.redirect.code }} {{ site.redirect.target }};
 {%   endif %}
 
 {% elif site.mode in ['serve', 'server'] %}
