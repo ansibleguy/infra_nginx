@@ -40,6 +40,7 @@
         - {m: 'DELETE', s: 'https'}
         - {m: 'PATCH', s: 'http'}
         - {m: 'PATCH', s: 'https'}
+      tags: skip_ansible_lint  # curl instead of get_url-module
 
     - name: Checking responses
       ansible.builtin.command: "curl -v --insecure {{ item.p | default('') }}
@@ -62,3 +63,4 @@
         - {t: 'nginx4', s: 'https', e: 'HTTP/2 200', o: '<h1>test4</h1>'}
         - {t: 'nginx5', s: 'http', e: 'HTTP/1.1 301'}
         - {t: 'nginx5', s: 'https', e: 'HTTP/2 302'}
+      tags: skip_ansible_lint  # curl instead of get_url-module

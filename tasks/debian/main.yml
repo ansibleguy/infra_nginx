@@ -32,7 +32,7 @@
     validate: "nginx -t -c %s"
     insertafter: "{{ item.after | default(omit) }}"
     backrefs: true
-  notify: restart-nginx
+  notify: Restart-nginx
   loop: "{{ NGINX_HC.main_config }}"
 
 # todo: implement GeoIP
