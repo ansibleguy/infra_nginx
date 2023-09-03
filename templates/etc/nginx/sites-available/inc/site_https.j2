@@ -52,6 +52,14 @@ server {
 {%     endfor %}
 {%   endif %}
 
+{%   if site.basic_auth.enable | bool %}
+{#   remove basic-auth headers before passing request; some application may be impacted by them #}
+    proxy_set_header X-User "";
+    proxy_set_header X-Auth "";
+    proxy_set_header X-Auth-Type "";
+    proxy_set_header Authorization "";
+{%   endif %}
+
 {% elif site.mode == 'redirect' %}
     # redirect-mode config
 {%   if site.redirect.request_uri %}
@@ -63,14 +71,6 @@ server {
 {% elif site.mode in ['serve', 'server'] %}
     # serve-mode config
     try_files $uri $uri/ /{{ site.serve.index[0] | default(site.server.index[0]) }};
-{% endif %}
-
-{% if site.basic_auth.enable | bool and site.mode == 'proxy' %}
-{#   remove basic-auth headers before passing request; some application may be impacted by them #}
-    proxy_set_header X-User "";
-    proxy_set_header X-Auth "";
-    proxy_set_header X-Auth-Type "";
-    proxy_set_header Authorization "";
 {% endif %}
 
 {% if site.config_additions_root | length > 0 %}
