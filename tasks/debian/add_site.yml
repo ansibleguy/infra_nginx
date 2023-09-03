@@ -13,40 +13,49 @@
 - name: "Nginx | Site '{{ name }}' | Processing local certs"
   ansible.builtin.import_tasks: add_certs.yml
   when: "site.ssl.mode in ['selfsigned', 'existing', 'ca']"
-  tags: [certs, sites]
+  tags: [certs]
 
 # as letsencrypt generator could be skipped on previous run
 - name: "Nginx | Site '{{ name }}' | Checking if certificate exists"
   ansible.builtin.stat:
     path: "{{ NGINX_CONFIG.ssl.path }}/{{ name }}.key"
   register: ng_site_ssl_key
+  tags: always
 
 - name: "Nginx | Site '{{ name }}' | Checking config"
   ansible.builtin.assert:
     that:
       - site.domain is defined
       - ng_site_ssl_key.stat.exists
+      - not site.basic_auth.enable | bool or site.basic_auth.provider in NGINX_HC.options.basic_auth
   tags: always
+
+- name: "Nginx | Site '{{ name }}' | Processing basic-auth"
+  ansible.builtin.import_tasks: add_basic_auth.yml
+  when: site.basic_auth.enable | bool
+  tags: [auth]
 
 - name: "Nginx | Site '{{ name }}' | Adding cache directory"
   ansible.builtin.file:
     path: "{{ site.proxy.cache.path }}/site_{{ name }}"
     state: directory
-    mode: 0755
+    mode: 0750
+    owner: "{{ NGINX_CONFIG.user }}"
+    group: "{{ NGINX_CONFIG.group }}"
   when: site.proxy.cache.enable | bool
 
-- name: "Nginx | Site '{{ name }}' | Adding site config"
+- name: "Nginx | Site '{{ name }}' | Config"
   ansible.builtin.template:
     src: 'templates/etc/nginx/sites-available/site.j2'
     dest: "/etc/nginx/sites-available/site_{{ name }}"
     mode: 0640
     owner: 'root'
     group: "{{ NGINX_CONFIG.group }}"
-  tags: [config, sites]
+  tags: [auth]
+  notify: reload-nginx
 
-- name: "Nginx | Site '{{ name }}' | Enabling site config"
+- name: "Nginx | Site '{{ name }}' | Enabling config"
   ansible.builtin.file:
     src: "/etc/nginx/sites-available/site_{{ name }}"
     dest: "/etc/nginx/sites-enabled/site_{{ name }}"
     state: link
-  tags: [config, sites]

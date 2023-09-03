@@ -48,7 +48,7 @@
     loop_var: site_item
   with_dict: "{{ NGINX_CONFIG.sites }}"
   no_log: true
-  tags: [config, sites, certs]
+  tags: [config, sites, certs, auth]
   args:
     apply:
       tags: [config, sites, certs]
@@ -83,7 +83,7 @@
     loop_var: site_item
   with_dict: "{{ NGINX_CONFIG.sites }}"
   no_log: true
-  tags: [config, sites, certs]
+  tags: [config, sites, certs, auth]
   args:
     apply:
-      tags: [config, sites, certs]
+      tags: [config, sites]

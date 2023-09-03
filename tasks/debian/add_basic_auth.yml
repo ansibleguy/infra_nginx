@@ -1,0 +1,73 @@
+---
+
+- name: "Nginx | Site '{{ name }}' | Basic Auth | Allowing nginx-user to process system-logins"
+  ansible.builtin.user:
+    name: "{{ NGINX_CONFIG.user }}"
+    groups: 'shadow'
+    append: true
+  when:
+    - site.basic_auth.provider == 'pam'
+    - site.basic_auth.pam.kind == 'system'
+
+# todo: add pam-system content (with optional group filter)
+- name: "Nginx | Site '{{ name }}' | Basic Auth | Adding pam file"
+  ansible.builtin.copy:
+    dest: "/etc/pam.d/nginx_{{ name }}_{{ site.basic_auth.pam.kind }}"
+    content: |
+      # ansible_managed
+
+    owner: 'root'
+    group: "{{ NGINX_CONFIG.group }}"
+    mode: 0640
+  when:
+    - site.basic_auth.provider == 'pam'
+    - site.basic_auth.pam.kind == 'system'
+
+- name: "Nginx | Site '{{ name }}' | Basic Auth | Adding pam file"
+  ansible.builtin.copy:
+    dest: "/etc/pam.d/nginx_{{ name }}_{{ site.basic_auth.pam.kind }}"
+    content: |
+      # ansible_managed
+
+      {% for line in site.basic_auth.pam.custom_content | ensure_list %}
+      {{ line }}
+      {% endfor %}
+
+    owner: 'root'
+    group: "{{ NGINX_CONFIG.group }}"
+    mode: 0640
+  when:
+    - site.basic_auth.provider == 'pam'
+    - site.basic_auth.pam.kind == 'custom'
+
+# NOTE: locally because the executing host needs to have 'passlib' installed
+- name: "Nginx | Site '{{ name }}' | Basic Auth | Creating credential file locally"
+  community.general.htpasswd:
+    path: "/tmp/nginx_auth_{{ name }}"
+    name: "{{ item.key }}"
+    password: "{{ item.value }}"
+    mode: 0600
+  with_dict: "{{ site.basic_auth.file.users }}"
+  register: site_creds
+  ignore_errors: true
+  delegate_to: localhost
+  become: false
+  no_log: true
+  when: site.basic_auth.provider == 'file'
+
+- name: "Nginx | Site '{{ name }}' | Basic Auth | Pretty error"
+  ansible.builtin.fail:
+    msg: "You may need to install 'passlib' on your controller to use file-based basic-auth! (python3 -m pip install passlib)"
+  when:
+    - site.basic_auth.provider == 'file'
+    - site_creds.failed | default(false)
+
+- name: "Nginx | Site '{{ name }}' | Basic Auth | Copy credential file"
+  ansible.builtin.copy:
+    src: "/tmp/nginx_auth_{{ name }}"
+    dest: "/etc/nginx/auth/auth_{{ name }}"
+    owner: 'root'
+    group: "{{ NGINX_CONFIG.group }}"
+    mode: 0640
+  no_log: true
+  when: site.basic_auth.provider == 'file'

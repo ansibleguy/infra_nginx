@@ -11,5 +11,8 @@ NGINX_HC:
   config_graylist: ['ssl_stapling', 'ssl_stapling_verify']
   restricted_methods: ['GET', 'POST', 'HEAD']
   dangerous_methods: ['CONNECT', 'TRACE']
+  options:
+    basic_auth: ['file', 'pam']
+    basic_auth_pam: ['system', 'custom']
 
 NONE_VALUES: [none, '', ' ']

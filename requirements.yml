@@ -4,6 +4,7 @@
 
 collections:
   - 'community.crypto'
+  - 'community.general'
 
 roles:
   - src: 'ansibleguy.infra_certs'

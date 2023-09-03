@@ -106,6 +106,11 @@ This will also be done automatically if no domain is supplied.
   80/tcp, 443/tcp+udp to acme-v02.api.letsencrypt.org, staging-v02.api.letsencrypt.org (_debug mode_) and r3.o.lencr.org
 
 
+* **Info:** This role also supports configuring basic-auth.
+
+  For advanced use-cases you might want to set [auth_request](http://nginx.org/en/docs/http/ngx_http_auth_request_module.html) in `site.config_additions_root` that can be used to implement OAuth-Proxies and so on.
+
+
 ## Usage
 
 ### Config
@@ -163,6 +168,18 @@ nginx:
       security:
         restrict_methods: false
 
+    fileshare:
+      mode: 'serve'
+      domain: 'files.guy.net'
+      serve:
+        path: '/var/www/files'
+
+      basic_auth:
+        enable: true
+        provider: 'file'
+        file:
+          users:
+            some_user: 'some_password'
 ```
 
 ### Execution
@@ -185,6 +202,7 @@ There are also some useful **tags** available:
 * config => only update site config (_excluding certificates_)
 * certs
 * letsencrypt
+* auth
 
 To debug errors - you can set the 'debug' variable at runtime:
 ```bash

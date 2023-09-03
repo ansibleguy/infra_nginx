@@ -1,7 +1,5 @@
 ---
 
-# todo: test 'plain_site=false'
-
 - name: Converge
   hosts: all
   vars:
@@ -14,6 +12,34 @@
             mode: 'ca'
             cert:
               cn: 'Nginx'
+              org: 'AnsibleGuy Test'
+              email: 'testmaster@ansibleguy.net'
+
+        test2:
+          domain: 'nginx2.test.ansibleguy.net'
+
+          ssl:
+            mode: 'ca'
+            cert:
+              cn: 'Nginx2'
+              org: 'AnsibleGuy Test'
+              email: 'testmaster@ansibleguy.net'
+
+        basic_auth:
+          enable: true
+          provider: 'file'
+          file:
+            users:
+              someguy: 'somepassword'
+
+        test3:
+          domain: 'nginx3.test.ansibleguy.net'
+          plain_site: false
+
+          ssl:
+            mode: 'ca'
+            cert:
+              cn: 'Nginx3'
               org: 'AnsibleGuy Test'
               email: 'testmaster@ansibleguy.net'
 

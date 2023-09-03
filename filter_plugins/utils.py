@@ -6,7 +6,7 @@ class FilterModule(object):
     def filters(self):
         return {
             "safe_key": self.safe_key,
-            "fallback": self.fallback,
+            "ensure_list": self.ensure_list,
             "prepare_letsencrypt": self.prepare_letsencrypt,
         }
 
@@ -15,11 +15,12 @@ class FilterModule(object):
         return regex_replace(r'[^0-9a-zA-Z\.]+', '', key.replace(' ', '_'))
 
     @staticmethod
-    def fallback(opt1: str, opt2: str) -> str:
-        if opt1 not in [None, '', 'None', 'none', ' ']:
-            return opt1
+    def ensure_list(data: (str, list)) -> list:
+        # if user supplied a string instead of a list => convert it to match our expectations
+        if isinstance(data, list):
+            return data
 
-        return opt2
+        return [data]
 
     @classmethod
     def prepare_letsencrypt(cls, sites: dict, state: str, email: str = None, only_site: str = None) -> dict:

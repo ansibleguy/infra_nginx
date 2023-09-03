@@ -24,6 +24,16 @@ server {
   index {% for ind in site.serve.index %}{{ ind }} {% endfor %};
 {% endif %}
 
+{% if site.basic_auth.enable | bool %}
+{%   if site.basic_auth.provider == 'file' %}
+  auth_basic "{{ site.basic_auth.message }}";
+  auth_basic_user_file /etc/nginx/auth/auth_{{ name }};
+{%   else %}
+  auth_pam "{{ site.basic_auth.message }}";
+  auth_pam_service_name "nginx_{{ name }}_{{ site.basic_auth.pam.kind }}";
+{%   endif %}
+{% endif %}
+
   location / {
 {% if site.mode == 'proxy' %}
     # proxy-mode config
@@ -53,6 +63,14 @@ server {
 {% elif site.mode == 'serve' %}
     # serve-mode config
     try_files $uri $uri/ /{{ site.serve.index[0] }};
+{% endif %}
+
+{% if site.basic_auth.enable | bool and site.mode == 'proxy' %}
+{#   remove basic-auth headers before passing request; some application may be impacted by them #}
+    proxy_set_header X-User "";
+    proxy_set_header X-Auth "";
+    proxy_set_header X-Auth-Type "";
+    proxy_set_header Authorization "";
 {% endif %}
 
 {% if site.config_additions_root | length > 0 %}

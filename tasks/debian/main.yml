@@ -56,6 +56,14 @@
     apply:
       tags: [base, config, sites]
 
+- name: Nginx | Adding auth directory
+  ansible.builtin.file:
+    path: '/etc/nginx/auth'
+    owner: 'root'
+    group: "{{ NGINX_CONFIG.group }}"
+    mode: 0750
+    state: directory
+
 - name: Nginx | Processing sites
   ansible.builtin.import_tasks: sites.yml
 
