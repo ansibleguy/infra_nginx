@@ -54,7 +54,7 @@
   tags: [auth]
   notify: reload-nginx
 
-- name: "Nginx | Site '{{ name }}' | Enabling config"
+- name: "Nginx | Site '{{ name }}' | Enabling"
   ansible.builtin.file:
     src: "/etc/nginx/sites-available/site_{{ name }}"
     dest: "/etc/nginx/sites-enabled/site_{{ name }}"

@@ -3,6 +3,8 @@
 - name: Verify
   hosts: all
   gather_facts: false
+  vars:
+    tester_ip: '192.168.12.1'
   tasks:
     - name: Checking that service is running and enabled
       ansible.builtin.systemd:
@@ -17,3 +19,46 @@
       ansible.builtin.systemd:
         name: 'nginx.service'
         state: restarted
+
+    - name: Checking that illegal methods are rejected
+      ansible.builtin.command: "curl -v --insecure
+      -X{{ item.m }} {{ item.s }}://{{ tester_ip }}
+      -H 'Host: nginx1.test.ansibleguy.net'"
+      register: ng_test_badmeth
+      failed_when:
+        - "'HTTP/1.1 405' not in ng_test_badmeth.stderr"
+        - "'HTTP/2 405' not in ng_test_badmeth.stderr"
+      changed_when: false
+      with_items:
+        - {m: 'TRACE', s: 'http'}
+        - {m: 'TRACE', s: 'https'}
+        - {m: 'CONNECT', s: 'http'}
+        - {m: 'CONNECT', s: 'https'}
+        - {m: 'OPTIONS', s: 'http'}
+        - {m: 'OPTIONS', s: 'https'}
+        - {m: 'DELETE', s: 'http'}
+        - {m: 'DELETE', s: 'https'}
+        - {m: 'PATCH', s: 'http'}
+        - {m: 'PATCH', s: 'https'}
+
+    - name: Checking responses
+      ansible.builtin.command: "curl -v --insecure {{ item.p | default('') }}
+      {{ item.s }}://{{ tester_ip }}/test.html
+      -H 'Host: {{ item.t }}.test.ansibleguy.net'"
+      register: ng_test_res
+      failed_when: >
+        (item.e is defined and item.e not in ng_test_res.stderr) or
+        (item.o is defined and item.o not in ng_test_res.stdout)
+      changed_when: false
+      with_items:
+        - {t: 'nginx1', s: 'http', e: 'HTTP/1.1 301'}
+        - {t: 'nginx1', s: 'https', e: 'HTTP/2 200', o: '<h1>test</h1>'}
+        - {t: 'nginx2', s: 'http', e: 'HTTP/1.1 301'}
+        - {t: 'nginx2', s: 'https', e: 'HTTP/2 401'}
+        - {t: 'nginx2', s: 'https', e: 'HTTP/2 200', o: '<h1>test</h1>', p: '-u someguy:somepassword'}
+        # - {t: 'nginx3', s: 'http', e: 'HTTP/1.1 404'} will get fall-back to 301 of other site
+        - {t: 'nginx3', s: 'https', e: 'HTTP/2 200', o: '<h1>test</h1>'}
+        - {t: 'nginx4', s: 'http', e: 'HTTP/1.1 301'}
+        - {t: 'nginx4', s: 'https', e: 'HTTP/2 200', o: '<h1>test4</h1>'}
+        - {t: 'nginx5', s: 'http', e: 'HTTP/1.1 301'}
+        - {t: 'nginx5', s: 'https', e: 'HTTP/2 301'}

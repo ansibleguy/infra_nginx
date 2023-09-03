@@ -22,6 +22,7 @@
     name: "{{ NGINX_CONFIG.user }}"
     shell: '/usr/sbin/nologin'
     comment: 'Nginx Service User'
+  when: NGINX_CONFIG.user != 'www-data'
 
 - name: Nginx | Setting base config
   ansible.builtin.lineinfile:
@@ -31,17 +32,11 @@
     validate: "nginx -t -c %s"
     insertafter: "{{ item.after | default(omit) }}"
     backrefs: true
-  register: nginx_user_update_raw
+  notify: restart-nginx
   loop: "{{ NGINX_HC.main_config }}"
 
 # todo: implement GeoIP
 #   https://fedingo.com/how-to-block-ip-by-country-in-nginx/
-
-- name: Nginx | Restarting nginx
-  ansible.builtin.systemd:
-    name: 'nginx.service'
-    state: restarted
-  when: nginx_user_update_raw.changed
 
 - name: Nginx | Removing default site
   ansible.builtin.file:
@@ -73,10 +68,3 @@
     enabled: yes
     state: started
   tags: [base]
-
-- name: Nginx | Restarting nginx  # reload will not enable all config changes.. we could check for changes in the future
-  ansible.builtin.systemd:
-    name: 'nginx.service'
-    state: restarted
-  tags: [base, config, sites, certs]
-  changed_when: false

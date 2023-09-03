@@ -58,7 +58,7 @@ defaults_site:
         background_update: 'on'
         lock: 'on'
 
-  serve:
+  server:
     path: '/var/www/html'
     index: ['index.html']
 

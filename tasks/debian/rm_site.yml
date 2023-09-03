@@ -4,10 +4,10 @@
   ansible.builtin.file:
     path: "{{ item }}"
     state: absent
-  register: site_config
   loop:
     - "/etc/nginx/sites-enabled/site_{{ name }}"
     - "/etc/nginx/sites-available/site_{{ name }}"
+  notify: restart-nginx
 
 - name: "Nginx | Remove Site '{{ name }}' | Removing local certificates"
   ansible.builtin.file:
@@ -27,9 +27,3 @@
     - "/etc/nginx/auth/auth_{{ name }}"
     - "/etc/pam.d/nginx_{{ name }}_system"
     - "/etc/pam.d/nginx_{{ name }}_custom"
-
-- name: "Nginx | Remove Site '{{ name }}' | Restarting nginx service"
-  ansible.builtin.systemd:
-    name: 'nginx.service'
-    state: restarted
-  when: site_config.changed

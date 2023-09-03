@@ -142,7 +142,7 @@ nginx:
         mode: 'existing'  # pre-existing certificates to be copied to the target server
 
     guys_statics:
-      mode: 'serve'
+      mode: 'server'
       domain: 'static.guy.net'
       serve:
         path: '/var/www/static'
@@ -169,7 +169,7 @@ nginx:
         restrict_methods: false
 
     fileshare:
-      mode: 'serve'
+      mode: 'server'
       domain: 'files.guy.net'
       serve:
         path: '/var/www/files'

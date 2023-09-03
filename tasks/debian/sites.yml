@@ -53,11 +53,8 @@
     apply:
       tags: [config, sites, certs]
 
-- name: Nginx | Reloading nginx
-  ansible.builtin.systemd:
-    name: 'nginx.service'
-    state: reloaded
-  changed_when: false
+- name: Nginx | Handlers
+  ansible.builtin.meta: flush_handlers
   tags: [base, config, sites, certs]
 
 - name: Nginx | Adding status page

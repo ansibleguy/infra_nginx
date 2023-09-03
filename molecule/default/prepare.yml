@@ -1,0 +1,45 @@
+---
+
+- name: Converge
+  hosts: all
+  tasks:
+    - name: Installing test-tools
+      ansible.builtin.apt:
+        name: ['curl']
+
+    - name: Creating web-directories
+      ansible.builtin.file:
+        state: directory
+        path: "/var/www/{{ item }}"
+        mode: 0755
+      loop:
+        - 'test'
+        - 'test4'
+
+    - name: Creating index files
+      ansible.builtin.copy:
+        content: |
+          <html><h1>{{ item }}</h1></html>
+        dest: "/var/www/{{ item }}/test.html"
+        mode: 0644
+      loop:
+        - 'test'
+        - 'test4'
+
+    - name: Installing web-server service (1/2)
+      ansible.builtin.copy:
+        content: |
+          [Service]
+          Type=simple
+          ExecStart=/usr/bin/python3 -m http.server --bind 127.0.0.1 8080
+          WorkingDirectory=/var/www/test
+          
+          [Install]
+          WantedBy=multi-user.target
+        dest: '/etc/systemd/system/test_server.service'
+        mode: 0644
+
+    - name: Starting web-server
+      ansible.builtin.systemd:
+        name: 'test_server.service'
+        state: started

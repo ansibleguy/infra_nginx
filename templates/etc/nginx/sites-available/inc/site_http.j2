@@ -10,18 +10,7 @@ server {
 
 {% include "inc/site_http_log.j2" %}
 {% include "inc/site_http_headers.j2" %}
-
-{%   if site.security.restrict_methods | bool %}
-  # security config
-  if ($request_method !~ ^({{ NGINX_HC.restricted_methods | join('|') }})$ ) {
-    return 405;
-  }
-{%   elif site.security.deny_dangerous_methods | bool %}
-  # security config
-  if ($request_method !~ ^({{ NGINX_HC.dangerous_methods | join('|') }})$ ) {
-    return 405;
-  }
-{%   endif %}
+{% include "inc/site_http_config.j2" %}
 
 {% if site.ssl.mode == 'letsencrypt' %}
   # welcome letsencrypt bots

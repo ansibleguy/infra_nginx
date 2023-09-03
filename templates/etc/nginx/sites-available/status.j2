@@ -3,6 +3,7 @@
 
 server {
   listen {{ NGINX_CONFIG.status_page.bind }}:{{ NGINX_CONFIG.status_page.port }};
+  server_name {{ NGINX_CONFIG.status_page.bind }} localhost
 
   # log config
 {% if NGINX_CONFIG.log.syslog and NGINX_CONFIG.log.syslog_host is not none %}
