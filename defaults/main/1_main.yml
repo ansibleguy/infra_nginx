@@ -60,6 +60,8 @@ defaults_nginx:
     renew: false  # if a renewal should be started by the role; the renewal service will auto-renew the certificates otherwise
 
   ssl:
+    owner: 'root'  # fallback to nginx-user
+    group:  # fallback to nginx-group
     path: '/etc/nginx/ssl'
     ca:
       file:  # can be used if you want to use an existing ca

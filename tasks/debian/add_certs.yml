@@ -7,10 +7,10 @@
     certs:
       mode: "{{ site.ssl.mode }}"
       path: "{{ NGINX_CONFIG.ssl.path }}"
-      owner_key: "{{ NGINX_CONFIG.user }}"
-      group_key: "{{ NGINX_CONFIG.group }}"
-      owner_cert: "{{ NGINX_CONFIG.user }}"
-      group_cert: "{{ NGINX_CONFIG.group }}"
+      owner_key: "{{ NGINX_CONFIG.ssl.owner | default( NGINX_CONFIG.user, true) }}"
+      group_key: "{{ NGINX_CONFIG.ssl.group | default( NGINX_CONFIG.group, true) }}"
+      owner_cert: "{{ NGINX_CONFIG.ssl.owner | default( NGINX_CONFIG.user, true) }}"
+      group_cert: "{{ NGINX_CONFIG.ssl.group | default( NGINX_CONFIG.group, true) }}"
       cert:
         name: "{{ name }}"
         cn: "{{ site.ssl.cert.cn }}"

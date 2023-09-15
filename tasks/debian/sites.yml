@@ -16,10 +16,10 @@
     certs:
       mode: 'le_certbot'
       path: "{{ NGINX_CONFIG.ssl.path }}"
-      owner_key: "{{ NGINX_CONFIG.user }}"
-      group_key: "{{ NGINX_CONFIG.group }}"
-      owner_cert: "{{ NGINX_CONFIG.user }}"
-      group_cert: "{{ NGINX_CONFIG.group }}"
+      owner_key: "{{ NGINX_CONFIG.ssl.owner | default( NGINX_CONFIG.user, true) }}"
+      group_key: "{{ NGINX_CONFIG.ssl.group | default( NGINX_CONFIG.group, true) }}"
+      owner_cert: "{{ NGINX_CONFIG.ssl.owner | default( NGINX_CONFIG.user, true) }}"
+      group_cert: "{{ NGINX_CONFIG.ssl.group | default( NGINX_CONFIG.group, true) }}"
       letsencrypt:
         certs: "{{ ng_letsencrypt_certs }}"
         path: "{{ NGINX_CONFIG.letsencrypt.path }}"
