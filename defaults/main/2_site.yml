@@ -22,8 +22,8 @@ defaults_site:
   config_additions_root: []  # lines that will 1-to-1 be appended inside 'location / {}'
 
   security:
-    # disable anything but GET/POST/HEAD methods; if you're running a web-application you might need to disable this filter
     restrict_methods: true
+    allow_only_methods: ['HEAD', 'GET', 'POST']
     # if 'restrict_methods' is disabled - this will still deny 'TRACE' & 'CONNECT' as they might open your server/services up to attacks
     deny_dangerous_methods: true
 
