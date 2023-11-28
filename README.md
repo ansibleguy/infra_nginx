@@ -16,6 +16,10 @@ Ansible Role to deploy one or multiple NGINX sites on a linux server.
 ## Install
 
 ```bash
+# latest
+ansible-galaxy role install git+https://github.com/ansibleguy/infra_nginx
+
+# from galaxy
 ansible-galaxy install ansibleguy.infra_nginx
 
 # or to custom role-path
