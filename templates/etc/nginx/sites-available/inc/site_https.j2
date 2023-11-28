@@ -70,7 +70,7 @@ server {
 
 {% elif site.mode in ['serve', 'server'] %}
     # serve-mode config
-    try_files $uri $uri/ /{{ site.serve.index[0] | default(site.server.index[0]) }};
+    try_files $uri $uri/ /{{ site.serve.index[0] | default(site.server.index[0]) }} =404;
 {% endif %}
 
 {% if site.config_additions_root | length > 0 %}
