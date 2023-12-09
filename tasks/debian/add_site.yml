@@ -52,7 +52,7 @@
     owner: 'root'
     group: "{{ NGINX_CONFIG.group }}"
   tags: [auth]
-  notify: Reload-nginx
+  notify: [Validate-nginx-config, Reload-nginx]
 
 - name: "Nginx | Site '{{ name }}' | Enabling"
   ansible.builtin.file:

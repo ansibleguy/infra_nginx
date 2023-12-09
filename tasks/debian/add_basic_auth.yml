@@ -53,6 +53,7 @@
   delegate_to: localhost
   become: false
   no_log: true
+  changed_when: false
   when: site.basic_auth.provider == 'file'
 
 - name: "Nginx | Site '{{ name }}' | Basic Auth | Pretty error"

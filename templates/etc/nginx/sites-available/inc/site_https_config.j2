@@ -10,6 +10,35 @@
     return 405;
   }
 {% endif %}
+{% if site.security.block_script_bots | bool %}
+  # block well-known script-bots
+  if ($http_user_agent = "" ) {
+    return {{ site.security.block_status_code }};
+  }
+{%   if NGINX_HC.user_agents.script.full | length > 0 %}
+  if ($http_user_agent ~* ({{ NGINX_HC.user_agents.script.full | join('|') }}) ) {
+    return {{ site.security.block_status_code }};
+  }
+{%   endif %}
+{%   if NGINX_HC.user_agents.script.sub | length > 0 %}
+  if ($http_user_agent ~* (.*{{ NGINX_HC.user_agents.script.sub | join('.*|.*') }}.*) ) {
+    return {{ site.security.block_status_code }};
+  }
+{%   endif %}
+{% endif %}
+{% if site.security.block_bad_crawler_bots | bool %}
+  # block well-known bad-crawler-bots
+{%   if NGINX_HC.user_agents.bad_crawlers.full | length > 0 %}
+  if ($http_user_agent ~* ({{ NGINX_HC.user_agents.bad_crawlers.full | join('|') }}) ) {
+    return {{ site.security.block_status_code }};
+  }
+{%   endif %}
+{%   if NGINX_HC.user_agents.bad_crawlers.sub | length > 0 %}
+  if ($http_user_agent ~* (.*{{ NGINX_HC.user_agents.bad_crawlers.sub | join('.*|.*') }}.*) ) {
+    return {{ site.security.block_status_code }};
+  }
+{%   endif %}
+{% endif %}
 
 {% if NGINX_CONFIG.config | length > 0 %}
   # global config

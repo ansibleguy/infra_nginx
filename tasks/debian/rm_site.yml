@@ -7,7 +7,7 @@
   loop:
     - "/etc/nginx/sites-enabled/site_{{ name }}"
     - "/etc/nginx/sites-available/site_{{ name }}"
-  notify: Restart-nginx
+  notify: [Validate-nginx-config, Restart-nginx]
 
 - name: "Nginx | Remove Site '{{ name }}' | Removing local certificates"
   ansible.builtin.file:

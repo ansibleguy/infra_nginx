@@ -72,6 +72,8 @@ ansible-galaxy install -r requirements.yml
 
   * **Default opt-outs**:
     * proxy-mode caching
+    * Blocking of Known Script-Bots
+    * Blocking of known Bad-Crawler-Bots
 
 ## Info
 
@@ -145,6 +147,11 @@ nginx:
 
       ssl:
         mode: 'existing'  # pre-existing certificates to be copied to the target server
+
+      security:
+        # very basic filtering of bad bots based on user-agent matching
+        block_script_bots: true
+        block_bad_crawler_bots: true
 
     guys_statics:
       mode: 'server'

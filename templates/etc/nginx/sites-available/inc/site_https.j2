@@ -76,7 +76,7 @@ server {
 {% if site.config_additions_root | length > 0 %}
     # additional lines
 {% endif %}
-{% for line in site.config_additions_root %}
+{% for line in site.config_additions_root | ensure_list %}
     {{ line }}
 {% endfor %}
 
@@ -85,7 +85,7 @@ server {
 {% if site.config_additions | length > 0 %}
   # additional lines
 {% endif %}
-{% for line in site.config_additions %}
+{% for line in site.config_additions | ensure_list %}
   {{ line }}
 {% endfor %}
 

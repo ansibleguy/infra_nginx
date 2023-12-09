@@ -7,7 +7,7 @@
     mode: 0640
     owner: 'root'
     group: "{{ NGINX_CONFIG.group }}"
-  notify: Reload-nginx
+  notify: [Validate-nginx-config, Reload-nginx]
   tags: [config, sites, base]
 
 - name: Nginx | Status page | Enabling

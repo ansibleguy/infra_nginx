@@ -54,5 +54,17 @@
           redirect:
             target: 'https://github.com/ansibleguy'
 
+        TESTsecurity:
+          domain: 'nginx6.test.ansibleguy.net'
+          ssl: "{{ dummy_ssl }}"
+          mode: 'server'
+          server:
+            path: '/var/www/test6'
+            index: ['test.html']
+          security:
+            allow_only_methods: ['GET', 'HEAD']
+            block_script_bots: true
+            block_bad_crawler_bots: true
+
   roles:
     - ansibleguy.infra_nginx

@@ -26,6 +26,9 @@ defaults_site:
     allow_only_methods: ['HEAD', 'GET', 'POST']
     # if 'restrict_methods' is disabled - this will still deny 'TRACE' & 'CONNECT' as they might open your server/services up to attacks
     deny_dangerous_methods: true
+    block_script_bots: false
+    block_bad_crawler_bots: false
+    block_status_code: 403
 
   redirect:
     target: 'https://github.com/ansibleguy'
