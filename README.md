@@ -10,10 +10,11 @@ Ansible Role to deploy one or multiple NGINX sites on a linux server.
 [![Ansible-Lint Test Status](https://badges.ansibleguy.net/infra_nginx.ansiblelint.svg)](https://github.com/ansibleguy/_meta_cicd/blob/latest/templates/usr/local/bin/cicd/ansiblelint.sh.j2)
 [![Ansible Galaxy](https://badges.ansibleguy.net/galaxy.badge.svg)](https://galaxy.ansible.com/ui/standalone/roles/ansibleguy/infra_nginx)
 
-[Molecule Logs (if failed)](https://badges.ansibleguy.net/log/molecule_infra_nginx_test.log)
+Molecule Logs: [Short](https://badges.ansibleguy.net/log/molecule_infra_nginx_test_short.log), [Full](https://badges.ansibleguy.net/log/molecule_infra_nginx_test.log)
 
 **Tested:**
 * Debian 11
+* Debian 12
 
 ## Install
 
@@ -29,6 +30,9 @@ ansible-galaxy install ansibleguy.infra_nginx --roles-path ./roles
 
 # install dependencies
 ansible-galaxy install -r requirements.yml
+
+# if you want to use basic-auth: install python dependencies
+python3 -m pip install -r requirements.txt
 ```
 
 ## Functionality
