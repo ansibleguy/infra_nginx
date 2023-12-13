@@ -15,6 +15,7 @@ NGINX_HC:
     basic_auth: ['file', 'pam']
     basic_auth_pam: ['system', 'custom']
 
+  # see also: https://github.com/mitchellkrogza/nginx-ultimate-bad-bot-blocker/blob/master/_generator_lists/bad-user-agents.list
   user_agents:
     # Well-known user-agents used by scripting languages for very basic security-filtering
     # matching is done case-insensitive
@@ -32,24 +33,30 @@ NGINX_HC:
         - 'Metasploit'
         # automation tools
         - 'headless'
+        - 'cypress'
         # golang
         - 'go-http-client'
+        - 'zgrab'
         # python
         - 'python'
         - 'httpx'
         - 'httpcore'
         - 'aiohttp'
         - 'httputil'
+        - 'urllib'
         # php
         - 'GuzzleHttp'
         - 'phpcrawl'
         - 'Zend_Http_Client'
         - 'Wordpress'
+        - 'Symfony-HttpClient'
         # others
         - 'cpp-httplib'  # c++
         - 'java'
         - 'perl'
         - 'axios'  # JS
+        - 'perl'
+        - 'ruby'
 
     bad_crawlers:
       full: []
@@ -58,6 +65,7 @@ NGINX_HC:
         - 'test-bot'
         - 'tiny-bot'
         - 'fidget-spinner-bot'
+        - 'download'
         # python
         - 'scrapy'
 
