@@ -7,4 +7,5 @@ collections:
   - 'community.general'
 
 roles:
-  - src: 'ansibleguy.infra_certs'
+  - name: 'oxlorg.certs'
+    src: 'git+https://github.com/O-X-L/ansible-role-certs'

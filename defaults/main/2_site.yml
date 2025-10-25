@@ -33,7 +33,7 @@ defaults_site:
     block_status_code: 403
 
   redirect:
-    target: 'https://github.com/ansibleguy'
+    target: 'https://github.com/O-X-L'
     request_uri: false  # forward the path the client tried to open
     code: 302
 
@@ -75,7 +75,7 @@ defaults_site:
     mode: 'snakeoil'  # existing/selfsigned/ca/letsencrypt/snakeoil
     # existing:
     #   We expect the certs to be placed in the role's 'files' directory named like the site
-    #   Example: files/certs/ansibleguy.key and files/certs/ansibleguy.crt
+    #   Example: files/certs/oxlorg.key and files/certs/oxlorg.crt
     # letsencrypt:
     #   Host needs to have a valid public dns record pointed at it
     #   Needs to be publicly reachable over port 80/tcp

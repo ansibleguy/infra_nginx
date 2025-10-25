@@ -23,7 +23,7 @@
     - name: Checking that illegal methods are rejected
       ansible.builtin.command: "curl -v --insecure
       -X{{ item.m }} {{ item.s }}://{{ tester_ip }}
-      -H 'Host: nginx1.test.ansibleguy.net'"
+      -H 'Host: nginx1.test.oxl.at'"
       register: ng_test_badmeth
       failed_when:
         - "'HTTP/1.1 405' not in ng_test_badmeth.stderr"
@@ -45,7 +45,7 @@
     - name: Checking responses
       ansible.builtin.command: "curl -v --insecure {{ item.p | default('') }}
       {{ item.s }}://{{ tester_ip }}/test.html
-      -H 'Host: {{ item.t }}.test.ansibleguy.net'"
+      -H 'Host: {{ item.t }}.test.oxl.at'"
       register: ng_test_res
       failed_when: >
         (item.e is defined and item.e not in ng_test_res.stderr) or

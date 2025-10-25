@@ -8,7 +8,7 @@
       cert:
         cn: 'Nginx'
         org: 'AnsibleGuy Test'
-        email: 'testmaster@ansibleguy.net'
+        email: 'testmaster@oxl.at'
     dummy_backend:
       ip: '127.0.0.1'
       port: 8080
@@ -16,13 +16,13 @@
     nginx:
       sites:
         TESTproxy:
-          domain: 'nginx1.test.ansibleguy.net'
+          domain: 'nginx1.test.oxl.at'
           ssl: "{{ dummy_ssl }}"
           mode: 'proxy'
           proxy: "{{ dummy_backend }}"
 
         TEST_basicauth:
-          domain: 'nginx2.test.ansibleguy.net'
+          domain: 'nginx2.test.oxl.at'
           ssl: "{{ dummy_ssl }}"
           proxy: "{{ dummy_backend }}"
 
@@ -34,13 +34,13 @@
                 someguy: 'somepassword'
 
         TEST_noplain:
-          domain: 'nginx3.test.ansibleguy.net'
+          domain: 'nginx3.test.oxl.at'
           plain_site: false
           ssl: "{{ dummy_ssl }}"
           proxy: "{{ dummy_backend }}"
 
         TESTserver:
-          domain: 'nginx4.test.ansibleguy.net'
+          domain: 'nginx4.test.oxl.at'
           ssl: "{{ dummy_ssl }}"
           mode: 'server'
           server:
@@ -48,14 +48,14 @@
             index: ['test.html']
 
         TESTredirect:
-          domain: 'nginx5.test.ansibleguy.net'
+          domain: 'nginx5.test.oxl.at'
           ssl: "{{ dummy_ssl }}"
           mode: 'redirect'
           redirect:
-            target: 'https://github.com/ansibleguy'
+            target: 'https://github.com/O-X-L'
 
         TESTsecurity:
-          domain: 'nginx6.test.ansibleguy.net'
+          domain: 'nginx6.test.oxl.at'
           ssl: "{{ dummy_ssl }}"
           mode: 'server'
           server:
@@ -67,4 +67,4 @@
             block_bad_crawler_bots: true
 
   roles:
-    - ansibleguy.infra_nginx
+    - oxlorg.nginx

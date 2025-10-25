@@ -2,7 +2,7 @@
 
 - name: "Nginx | Site '{{ name }}' | Certs | Creating certificates"
   ansible.builtin.include_role:
-    name: ansibleguy.infra_certs
+    name: oxlorg.certs
   vars:
     certs:
       mode: "{{ site.ssl.mode }}"

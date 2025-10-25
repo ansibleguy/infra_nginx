@@ -10,7 +10,7 @@
 
 - name: Nginx | Getting certificates using LetsEncrypt
   ansible.builtin.include_role:
-    name: ansibleguy.infra_certs
+    name: oxlorg.certs
   when: ng_letsencrypt_certs | length > 0
   vars:
     certs:
